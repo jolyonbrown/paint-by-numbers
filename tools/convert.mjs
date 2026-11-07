@@ -6,7 +6,7 @@
 // Options (all optional):
 //   --colors N        maximum number of colours (default 24; aim for 12-30)
 //   --min-area N      smallest section, in output pixels; smaller ones are merged into a neighbour (default 40)
-//   --min-width N     thinnest section, in output pixels; thinner slivers are merged (default 3)
+//   --min-width N     thinnest section, in output pixels; thinner slivers are merged (default 4)
 //   --size N          output resolution: length of the longer side in pixels (default 2000)
 //   --smooth N        speck-smoothing passes (default 2; 0 to disable)
 //   --merge-delta N   merge palette colours closer than this (CIE76 delta-E, default 7)
@@ -25,7 +25,7 @@ import { quantize, rgbToLab, dist2, hex } from './lib/color.mjs';
 import { modeFilter, components, mergeTiny, boundaryDistance, placeLabels, traceOutlines } from './lib/segment.mjs';
 import { VarintWriter, toBase64 } from './lib/encode.mjs';
 
-export const DEFAULTS = { colors: 24, minArea: 40, minWidth: 3, size: 2000, smooth: 2, mergeDelta: 7, out: 'pictures', thumbSize: 720 };
+export const DEFAULTS = { colors: 24, minArea: 40, minWidth: 4, size: 2000, smooth: 2, mergeDelta: 7, out: 'pictures', thumbSize: 720 };
 
 export async function convert(input, opts = {}) {
   const o = { ...DEFAULTS, ...opts };

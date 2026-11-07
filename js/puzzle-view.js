@@ -35,7 +35,7 @@ export class PuzzleView {
     this.ctx = canvas.getContext('2d');
     this.pz = pz;
     this.filled = filled;
-    this.cb = cb;
+    this.cb = { ...cb, onViewChange: () => { this.settle(); cb.onViewChange?.(); } };
     this.scale = 1; this.tx = 0; this.ty = 0;
     this.cssW = 1; this.cssH = 1; this.dpr = 1;
     this.selected = -1;
@@ -64,7 +64,7 @@ export class PuzzleView {
     this.ro.disconnect();
     this.unbind();
     // Free big canvases promptly (iOS has a tight canvas memory budget).
-    for (const c of [this.fillCanvas, this.hlCanvas, this.lineCanvas, this.scratch]) { c.width = c.height = 0; }
+    for (const c of [this.fillCanvas, this.hlCanvas, this.lineCanvas]) { c.width = c.height = 0; }
   }
 
   // ---------- layers ----------
@@ -118,8 +118,6 @@ export class PuzzleView {
     lc.stroke(all);
     lc.strokeRect(0.75, 0.75, W - 1.5, H - 1.5);
 
-    this.scratch = makeCanvas(1, 1);
-    this.scratchCtx = this.scratch.getContext('2d');
   }
 
   buildLabels() {
@@ -134,12 +132,27 @@ export class PuzzleView {
     }
   }
 
-  /** Shade the unfilled sections of colour c (or none for -1). */
+  /**
+   * Shade the unfilled sections of colour c (or none for -1) with a checker pattern drawn in
+   * picture space. The checker's square size is picked for the current zoom (about 6 CSS px on
+   * screen) and rebuilt when a gesture ends at a very different zoom, so drawing a frame is a
+   * single drawImage.
+   */
   setSelected(c) {
     this.selected = c;
-    const { W, map, sectionColor, bbox, colorSections } = this.pz;
+    this.buildShading();
+  }
+
+  shadingPeriod() {
+    return Math.max(1, Math.round(6 / this.scale));
+  }
+
+  buildShading() {
+    const c = this.selected;
+    const { W, H, map, bbox, colorSections } = this.pz;
     const hc = this.hlCtx;
-    hc.clearRect(0, 0, W, this.pz.H);
+    hc.clearRect(0, 0, W, H);
+    this.hlPeriod = this.shadingPeriod();
     if (c < 0) { this.requestDraw(); return; }
     const want = new Uint8Array(this.pz.S);
     let x0 = Infinity, y0 = Infinity, x1 = -1, y1 = -1;
@@ -150,16 +163,30 @@ export class PuzzleView {
       x1 = Math.max(x1, bbox[s * 4 + 2]); y1 = Math.max(y1, bbox[s * 4 + 3]);
     }
     if (x1 >= 0) {
-      const w = x1 - x0 + 1, h = y1 - y0 + 1;
-      const img = hc.createImageData(w, h), d = img.data;
+      const w = x1 - x0 + 1, h = y1 - y0 + 1, P = this.hlPeriod;
+      const img = hc.createImageData(w, h), d = new Uint32Array(img.data.buffer);
+      // Little-endian RGBA packed: 0xAABBGGRR.
+      const A = 0xffcccac9, B = 0xffecebea;
       for (let y = 0; y < h; y++) {
-        let p = (y0 + y) * W + x0, q = y * w * 4 + 3;
-        for (let x = 0; x < w; x++, p++, q += 4) if (want[map[p]]) d[q] = 255;
+        const ry = Math.floor((y0 + y) / P);
+        let p = (y0 + y) * W + x0, q = y * w;
+        for (let x = 0; x < w; x++, p++, q++) {
+          if (want[map[p]]) d[q] = ((Math.floor((x0 + x) / P) + ry) & 1) ? A : B;
+        }
       }
       hc.putImageData(img, x0, y0);
     }
-    void sectionColor;
     this.requestDraw();
+  }
+
+  /** Called when a gesture settles: re-density the checker if the zoom changed a lot. */
+  settle() {
+    if (this.selected < 0 || !this.showShading) return;
+    const want = this.shadingPeriod(), have = this.hlPeriod || want;
+    if (Math.max(want / have, have / want) >= 1.6) {
+      clearTimeout(this.settleT);
+      this.settleT = setTimeout(() => this.buildShading(), 60);
+    }
   }
 
   /** A canvas the size of section s's bounding box with the section's pixels in rgb. */
@@ -213,8 +240,6 @@ export class PuzzleView {
     this.canvas.height = Math.round(r.height * this.dpr);
     this.canvas.style.width = r.width + 'px';
     this.canvas.style.height = r.height + 'px';
-    this.scratch.width = this.canvas.width; this.scratch.height = this.canvas.height;
-    this.pattern = this.makePattern();
     const pad = 12;
     this.fitScale = Math.min((this.cssW - pad * 2) / this.pz.W, (this.cssH - pad * 2) / this.pz.H);
     this.minScale = this.fitScale;
@@ -226,16 +251,8 @@ export class PuzzleView {
       const s = this.scale * (this.fitScale / oldFit);
       this.setCenter(Math.max(this.minScale, Math.min(this.maxScale, s)), center[0], center[1]);
     }
+    this.settle();
     this.draw();
-  }
-
-  makePattern() {
-    const cell = Math.round(6 * this.dpr);
-    const c = makeCanvas(cell * 2, cell * 2), x = c.getContext('2d');
-    x.fillStyle = '#eceaea'; x.fillRect(0, 0, cell * 2, cell * 2);
-    x.fillStyle = '#cfcccb'; x.fillRect(0, 0, cell, cell); x.fillRect(cell, cell, cell, cell);
-    this.patternPeriod = cell * 2;
-    return this.ctx.createPattern(c, 'repeat');
   }
 
   toMap(x, y) { return [(x - this.tx) / this.scale, (y - this.ty) / this.scale]; }
@@ -257,6 +274,7 @@ export class PuzzleView {
     if (!this.sized) { this.pendingView = v; return; }
     if (!v || !(v.z > 0)) { this.fit(false); return; }
     this.setCenter(Math.max(this.minScale, Math.min(this.maxScale, v.z * this.fitScale)), v.cx, v.cy);
+    this.settle();
   }
 
   clamp() {
@@ -423,12 +441,12 @@ export class PuzzleView {
     if (this.velocity) {
       const v = this.velocity, dt = Math.min(40, t - v.t);
       v.t = t;
-      const ox = this.tx, oy = this.ty;
-      this.tx += v.vx * dt; this.ty += v.vy * dt;
+      const wantX = this.tx + v.vx * dt, wantY = this.ty + v.vy * dt;
+      this.tx = wantX; this.ty = wantY;
       this.clamp();
       const decay = Math.exp(-dt / 325);
-      v.vx = this.tx === ox ? 0 : v.vx * decay;
-      v.vy = this.ty === oy ? 0 : v.vy * decay;
+      v.vx = Math.abs(this.tx - wantX) > 0.01 ? 0 : v.vx * decay; // stop at the edges
+      v.vy = Math.abs(this.ty - wantY) > 0.01 ? 0 : v.vy * decay;
       if (Math.hypot(v.vx, v.vy) < 0.02) { this.velocity = null; this.cb.onViewChange?.(); } else active = true;
     }
     if (this.flight) {
@@ -492,26 +510,8 @@ export class PuzzleView {
       ctx.restore();
     }
 
-    // Shading of the selected colour's unfilled sections (screen-space checker, follows panning).
-    if (this.showShading && this.selected >= 0 && this.linesAlpha > 0) {
-      const sc = this.scratchCtx;
-      sc.setTransform(1, 0, 0, 1, 0, 0);
-      sc.globalCompositeOperation = 'source-over';
-      sc.clearRect(0, 0, cw, ch);
-      sc.setTransform(s, 0, 0, s, tx, ty);
-      sc.imageSmoothingEnabled = true;
-      sc.drawImage(this.hlCanvas, 0, 0);
-      sc.setTransform(1, 0, 0, 1, 0, 0);
-      sc.globalCompositeOperation = 'source-in';
-      const P = this.patternPeriod;
-      this.pattern.setTransform(new DOMMatrix([1, 0, 0, 1, ((tx % P) + P) % P, ((ty % P) + P) % P]));
-      sc.fillStyle = this.pattern;
-      sc.fillRect(0, 0, cw, ch);
-      sc.globalCompositeOperation = 'source-over';
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.drawImage(this.scratch, 0, 0);
-      ctx.setTransform(s, 0, 0, s, tx, ty);
-    }
+    // Shading of the selected colour's unfilled sections.
+    if (this.showShading && this.selected >= 0 && this.linesAlpha > 0) ctx.drawImage(this.hlCanvas, 0, 0);
 
     // Outlines.
     if (this.linesAlpha > 0) {
