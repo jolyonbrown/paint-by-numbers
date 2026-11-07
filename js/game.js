@@ -33,6 +33,7 @@ export class Game {
     for (const s of this.order) this.doneCount[pz.sectionColor[s]]++;
     this.selected = -1;
     this.finished = this.order.length === pz.S;
+    this.finishedAt = this.finished ? (saved?.finishedAt || saved?.updated || Date.now()) : null;
 
     root.innerHTML = `
       <div class="stage"><canvas aria-label="${pz.title}"></canvas>
@@ -231,6 +232,7 @@ export class Game {
   // ---------- finishing ----------
   finish() {
     this.finished = true;
+    this.finishedAt = Date.now();
     this.saveNow();
     this.root.classList.add('is-finished');
     this.view.locked = true;
@@ -282,7 +284,7 @@ export class Game {
     clearTimeout(this.saveT);
     if (!this.order.length && this.selected < 0) return;
     progress.save(this.pz.id, this.pz.hash, {
-      order: this.order, selected: this.selected, view: this.finished ? null : this.view.getView(), done: this.finished,
+      order: this.order, selected: this.selected, view: this.finished ? null : this.view.getView(), done: this.finished, finishedAt: this.finishedAt,
     });
   }
 

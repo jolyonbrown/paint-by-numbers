@@ -66,12 +66,17 @@ export class Menu {
     this.cards = new Map();
     const withProgress = this.entries.map((e) => ({ e, p: progress.summary(e.id, e.hash) }));
     const started = withProgress.filter(({ p }) => p && p.count > 0 && !p.done).sort((a, b) => b.p.updated - a.p.updated);
+    const finished = withProgress.filter(({ p }) => p && p.done).sort((a, b) => b.p.finishedAt - a.p.finishedAt);
+    const notDone = withProgress.filter(({ p }) => !p || !p.done).map((x) => x.e);
     const groups = [];
     if (started.length) groups.push(['Carry on colouring', started.map((x) => x.e)]);
+    // Season sections only show pictures still to finish; a finished season's section disappears.
     const cats = [];
     for (const e of this.entries) if (!cats.includes(e.category || 'Pictures')) cats.push(e.category || 'Pictures');
-    for (const c of cats) groups.push([c, this.entries.filter((e) => (e.category || 'Pictures') === c)]);
+    for (const c of cats) groups.push([c, notDone.filter((e) => (e.category || 'Pictures') === c)]);
+    if (finished.length) groups.push([`Finished (${finished.length})`, finished.map((x) => x.e)]);
     for (const [title, list] of groups) {
+      if (!list.length) continue;
       const h = document.createElement('h2');
       h.textContent = title;
       const grid = document.createElement('div');

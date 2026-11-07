@@ -33,10 +33,10 @@ export const progress = {
       return { ...p, order };
     } catch { return null; }
   },
-  save(id, hash, { order, selected, view, done }) {
+  save(id, hash, { order, selected, view, done, finishedAt }) {
     const u16 = Uint16Array.from(order);
     return set('progress:' + id, {
-      hash, order: toBase64(new Uint8Array(u16.buffer)), selected, view, done: !!done, updated: Date.now(),
+      hash, order: toBase64(new Uint8Array(u16.buffer)), selected, view, done: !!done, finishedAt: finishedAt || null, updated: Date.now(),
     });
   },
   /** Lightweight summary for the menu without decoding the order. */
@@ -45,7 +45,7 @@ export const progress = {
     if (!p || p.hash !== hash) return null;
     let count = 0;
     try { count = Math.floor((atob(p.order || '').length) / 2); } catch {}
-    return { count, done: !!p.done, updated: p.updated || 0, order: p.order };
+    return { count, done: !!p.done, updated: p.updated || 0, finishedAt: p.finishedAt || p.updated || 0, order: p.order };
   },
   clear(id) { del('progress:' + id); },
 };

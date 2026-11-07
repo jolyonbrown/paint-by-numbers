@@ -5,7 +5,9 @@ nothing designed to trick**. Help is always free.
 
 **Play:** <https://jolyonbrown.com/paint-by-numbers/>
 
-- Pick a picture from the menu. Pictures you've started show their progress in colour.
+- Pick a picture from the menu. Pictures you've started show their progress in colour and sit in
+  a "Carry on colouring" row at the top. Finished pictures move to a "Finished" gallery at the
+  bottom (most recent first), so the season sections only show what's left to colour.
 - Pinch to zoom and drag to move around. Numbers appear once a section is big enough to read.
 - Choose a colour from the row at the bottom, then tap sections with that number. Each colour's
   ring fills as you go, and the colour folds away when it's done.
