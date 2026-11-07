@@ -1,0 +1,64 @@
+{
+  "pictures": [
+    {
+      "id": "robin",
+      "title": "Robin",
+      "category": "Christmas",
+      "width": 1500,
+      "height": 2000,
+      "sections": 352,
+      "colors": 21,
+      "hash": "578fcdebc7"
+    },
+    {
+      "id": "tree",
+      "title": "Christmas Tree",
+      "category": "Christmas",
+      "width": 1500,
+      "height": 2000,
+      "sections": 489,
+      "colors": 24,
+      "hash": "40058b819b"
+    },
+    {
+      "id": "fireside",
+      "title": "Cosy Fireside",
+      "category": "Christmas",
+      "width": 1500,
+      "height": 2000,
+      "sections": 357,
+      "colors": 25,
+      "hash": "5c4fd10d26"
+    },
+    {
+      "id": "cottage",
+      "title": "Snowy Cottage",
+      "category": "Winter",
+      "width": 1500,
+      "height": 2000,
+      "sections": 413,
+      "colors": 25,
+      "hash": "8471ed4de9"
+    },
+    {
+      "id": "fox",
+      "title": "Fox in the Snow",
+      "category": "Winter",
+      "width": 1500,
+      "height": 2000,
+      "sections": 286,
+      "colors": 20,
+      "hash": "359abb39be"
+    },
+    {
+      "id": "woodland",
+      "title": "Autumn Woodland",
+      "category": "Autumn",
+      "width": 1500,
+      "height": 2000,
+      "sections": 595,
+      "colors": 19,
+      "hash": "2ae677062d"
+    }
+  ]
+}

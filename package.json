@@ -1,0 +1,16 @@
+{
+  "name": "paint-by-numbers",
+  "private": true,
+  "description": "Ad-free paint-by-numbers web app. The app itself has no build step; these dev dependencies are only for the picture tools in tools/.",
+  "type": "commonjs",
+  "scripts": {
+    "convert": "node tools/convert.mjs",
+    "build-pictures": "node tools/build-pictures.mjs",
+    "serve": "python3 -m http.server 8765 --bind 127.0.0.1",
+    "smoke": "node tools/smoke-test.cjs"
+  },
+  "devDependencies": {
+    "jpeg-js": "^0.4.4",
+    "pngjs": "^7.0.0"
+  }
+}

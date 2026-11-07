@@ -1,0 +1,58 @@
+{
+  "pictures": [
+    {
+      "id": "robin",
+      "title": "Robin",
+      "category": "Christmas",
+      "source": "robin.svg",
+      "options": {
+        "colors": 30
+      }
+    },
+    {
+      "id": "tree",
+      "title": "Christmas Tree",
+      "category": "Christmas",
+      "source": "tree.svg",
+      "options": {
+        "colors": 30
+      }
+    },
+    {
+      "id": "fireside",
+      "title": "Cosy Fireside",
+      "category": "Christmas",
+      "source": "fireside.svg",
+      "options": {
+        "colors": 30
+      }
+    },
+    {
+      "id": "cottage",
+      "title": "Snowy Cottage",
+      "category": "Winter",
+      "source": "cottage.svg",
+      "options": {
+        "colors": 30
+      }
+    },
+    {
+      "id": "fox",
+      "title": "Fox in the Snow",
+      "category": "Winter",
+      "source": "fox.svg",
+      "options": {
+        "colors": 30
+      }
+    },
+    {
+      "id": "woodland",
+      "title": "Autumn Woodland",
+      "category": "Autumn",
+      "source": "woodland.svg",
+      "options": {
+        "colors": 28
+      }
+    }
+  ]
+}
