@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Paint by Numbers</title>
+  <meta name="description" content="A calm paint-by-numbers game. No ads, no timers, no tricks.">
+  <meta name="theme-color" content="#f4efe8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Paint">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="menu" class="screen menu">
+    <header class="menu-head">
+      <h1>Paint by Numbers</h1>
+      <button class="round sound-toggle" type="button" aria-label="Sound">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="waves" d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/><path class="mute" d="m16 9.5 5 5m0-5-5 5"/></svg>
+      </button>
+    </header>
+    <div class="menu-list"></div>
+  </main>
+  <section id="game" class="screen game" hidden></section>
+  <div id="loading" class="loading" hidden><div class="spinner"></div></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

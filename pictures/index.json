@@ -1,0 +1,14 @@
+{
+  "pictures": [
+    {
+      "id": "cottage",
+      "title": "Snowy Cottage",
+      "category": "Winter",
+      "width": 1500,
+      "height": 2000,
+      "sections": 434,
+      "colors": 25,
+      "hash": "94a187b0eb"
+    }
+  ]
+}

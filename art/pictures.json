@@ -1,0 +1,5 @@
+{
+  "pictures": [
+    { "id": "cottage", "title": "Snowy Cottage", "category": "Winter", "source": "cottage.svg", "options": { "colors": 30 } }
+  ]
+}
