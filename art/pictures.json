@@ -6,7 +6,8 @@
       "category": "Christmas",
       "source": "robin.svg",
       "options": {
-        "colors": 30
+        "colors": 30,
+        "lineArt": true
       }
     },
     {
@@ -15,7 +16,8 @@
       "category": "Christmas",
       "source": "tree.svg",
       "options": {
-        "colors": 30
+        "colors": 30,
+        "lineArt": true
       }
     },
     {
@@ -24,7 +26,8 @@
       "category": "Christmas",
       "source": "fireside.svg",
       "options": {
-        "colors": 30
+        "colors": 30,
+        "lineArt": true
       }
     },
     {
@@ -33,7 +36,8 @@
       "category": "Winter",
       "source": "cottage.svg",
       "options": {
-        "colors": 30
+        "colors": 30,
+        "lineArt": true
       }
     },
     {
@@ -42,7 +46,8 @@
       "category": "Winter",
       "source": "fox.svg",
       "options": {
-        "colors": 30
+        "colors": 30,
+        "lineArt": true
       }
     },
     {
@@ -51,7 +56,8 @@
       "category": "Autumn",
       "source": "woodland.svg",
       "options": {
-        "colors": 28
+        "colors": 28,
+        "lineArt": true
       }
     }
   ]

@@ -2,14 +2,16 @@
 
 Any PNG or JPG can become a puzzle. The converter reduces it to a limited palette, splits it into
 numbered sections, merges anything too small to tap, and writes a compact file the game loads
-instantly. The images that work best look like **flat-colour illustrations**. This guide covers
-how to get those from an AI image generator and how to add them to the game.
+instantly. The images that work best look like **flat-colour illustrations with bold dark
+outlines**, like a coloured-in colouring book. This guide covers how to get those from an AI
+image generator and how to add them to the game.
 
 ## What makes a good puzzle picture
 
 | Good | Why |
 | --- | --- |
 | Flat areas of solid colour | Each area becomes one clean section |
+| Bold, clean dark outlines around shapes | With `lineArt` they become the puzzle's lines: every shape gets a crisp border, even next to the same colour (a white snowman on white snow stays visible) |
 | Crisp edges between colours | Edges become the outlines she sees |
 | Plenty of small, distinct shapes (leaves, bricks, snowflakes, baubles) | That's where the fun of hunting comes from |
 | 12–30 clearly different colours | More just means near-identical shades that are hard to tell apart |
@@ -19,7 +21,7 @@ how to get those from an AI image generator and how to add them to the game.
 | --- | --- |
 | Gradients, soft shading, glows, lens blur | They turn into bands of near-identical colours |
 | Texture, grain, noise, watercolour bleed | They turn into hundreds of tiny specks (merged away, but the shapes get messy) |
-| Thin black outlines around everything | Each line becomes its own long thin black section; thick bold outlines are fine if you like that look |
+| Sketchy, broken or hairline outlines | Gaps let neighbouring areas run together; ask for "bold clean outlines" |
 | Text, signatures, watermarks | They become meaningless squiggles |
 | Photos | Even heavily simplified, they look blotchy |
 
@@ -27,14 +29,18 @@ how to get those from an AI image generator and how to add them to the game.
 
 Start every prompt with the style block, then describe the scene:
 
-> **flat colour illustration, clean distinct shapes, crisp edges, no gradients, no texture or noise, no text, limited palette, portrait 3:4, detailed scene of …**
+> **flat colour illustration with bold clean dark outlines, clean distinct shapes, crisp edges, no gradients, no texture or noise, no text, limited palette, portrait 3:4, detailed scene of …**
 
-Adding *"vector art"*, *"paper cut-out"* or *"screen print"* pushes most generators further
-towards flat colour. Adding *"lots of small details"* gives more sections to find.
+Then convert it with `"lineArt": true` (see below). Adding *"vector art"*, *"colouring book
+style, coloured in"* or *"sticker art"* pushes most generators further towards flat colour with
+outlines. Adding *"lots of small details"* gives more sections to find.
 
 If the generator supports a negative prompt, use:
 
-> gradient, shading, shadow blur, glow, texture, noise, grain, watercolour, photo, realistic, text, letters, signature, watermark, outline
+> gradient, shading, shadow blur, glow, texture, noise, grain, watercolour, sketchy lines, photo, realistic, text, letters, signature, watermark
+
+Outline-free styles (paper cut-out, retro poster, low poly) work too: just leave `lineArt` off
+for those, and the borders between colours become the lines.
 
 ### Styles to try
 
@@ -43,10 +49,11 @@ of these:
 
 | Style | Add to the prompt | Notes |
 | --- | --- | --- |
-| Flat vector | `flat vector illustration, geometric shapes` | The safest choice; converts very cleanly |
+| Coloured colouring book | `colouring book page coloured in with flat colours, bold black outlines` | Closest to her current app; use `lineArt` |
+| Flat vector | `flat vector illustration, geometric shapes, bold outlines` | The safest choice; converts very cleanly |
 | Paper cut-out | `layered paper cut-out art, flat paper layers, no drop shadows` | Lovely layered look; say "no drop shadows" or you get soft shadows |
 | Folk art | `Scandinavian folk art, decorative patterns, symmetrical motifs` | Lots of small motifs, great for detail |
-| Stained glass | `stained glass window, bold dark lead lines, jewel colours` | The lead lines become black sections; quite a different, satisfying feel |
+| Stained glass | `stained glass window, bold dark lead lines, jewel colours` | With `lineArt` the lead lines become the puzzle's lines; a lovely fit |
 | Mosaic | `mosaic of small flat tiles` | Very many small sections; raise `--min-area` if it's too fiddly |
 | Retro poster | `1950s travel poster, flat screen-print colours` | Big shapes, fewer sections; good for a relaxing one |
 | Low poly | `low poly illustration, flat facets` | Triangles everywhere; a different kind of challenge |
@@ -54,7 +61,7 @@ of these:
 
 ### Example prompts
 
-- **Christmas:** *flat colour illustration, clean distinct shapes, crisp edges, no gradients, no
+- **Christmas:** *flat colour illustration with bold clean dark outlines, clean distinct shapes, crisp edges, no gradients, no
   texture or noise, no text, limited palette, portrait 3:4, detailed scene of a village street
   at Christmas, shop windows full of toys, strings of lights, wreaths on the doors, people
   carrying presents, falling snow*
@@ -78,7 +85,7 @@ of these:
    `category`:
 
    ```json
-   { "id": "owl", "title": "Snowy Owl", "category": "Winter", "source": "owl.png", "options": { "colors": 24 } }
+   { "id": "owl", "title": "Snowy Owl", "category": "Winter", "source": "owl.png", "options": { "colors": 24, "lineArt": true } }
    ```
 
    `id` must be unique and lower-case (it names the folder and the saved progress).
@@ -102,6 +109,9 @@ of these:
    | `size` | 2000 | Output resolution (longer side). Higher keeps more detail, but makes bigger files |
    | `smooth` | 2 | Speck-smoothing passes. Raise for noisy images, 0 to keep every pixel |
    | `mergeDelta` | 7 | Colours closer than this are merged. Raise if two colours look the same |
+   | `lineArt` | false | The picture has dark outlines: use them as the borders between sections (and keep same-coloured neighbours apart) instead of making them sections to colour. The puzzle's lines are drawn about as bold as the originals |
+   | `lineDark` | 30 | Line art: how dark (lightness 0–100) ink must be to count as an outline. Raise a little if outlines are dark grey or brown |
+   | `lineMax` | 10 | Line art: dark strokes up to this many pixels wide are outlines; wider dark areas (a hat, a cat) stay colourable |
 
    Rough guide: 300–1,500 sections is a relaxing session; 2,000+ is a long project.
 
@@ -118,7 +128,7 @@ of these:
 You can also convert a one-off image directly, without the manifest:
 
 ```bash
-node tools/convert.mjs path/to/image.png --id owl --title "Snowy Owl" --category Winter --colors 24 --preview tmp/owl.png
+node tools/convert.mjs path/to/image.png --id owl --title "Snowy Owl" --category Winter --colors 24 --line-art --preview tmp/owl.png
 ```
 
 > **Re-converting a picture resets its saved progress** (the sections change, so old progress
@@ -126,7 +136,7 @@ node tools/convert.mjs path/to/image.png --id owl --title "Snowy Owl" --category
 
 ## The placeholder pictures
 
-The six starter pictures were drawn in code as SVG (`tools/art/*.mjs` → `art/*.svg`) and go
-through exactly the same pipeline. Once the AI pictures arrive, remove a placeholder by deleting
+The six starter pictures were drawn in code as SVG (`tools/art/*.mjs` → `art/*.svg`), with a
+dark ink outline on every shape, and go through exactly the same pipeline with `lineArt` on. Once the AI pictures arrive, remove a placeholder by deleting
 its entry from `art/pictures.json` and its folder in `pictures/`, then run
 `node tools/build-pictures.mjs` and `node tools/update-sw.mjs`.

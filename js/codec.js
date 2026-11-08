@@ -93,5 +93,5 @@ export function decodePuzzle(json) {
   const colorSections = palette.map(() => []);
   for (let s = 0; s < S; s++) colorSections[sectionColor[s]].push(s);
 
-  return { id: json.id, title: json.title, hash: json.hash, W, H, S, map, sectionColor, palette, paletteHex: json.palette, bbox, area, labels, pole, chains, colorSections };
+  return { id: json.id, title: json.title, hash: json.hash, lineWidth: json.lineWidth || 1.6, W, H, S, map, sectionColor, palette, paletteHex: json.palette, bbox, area, labels, pole, chains, colorSections };
 }

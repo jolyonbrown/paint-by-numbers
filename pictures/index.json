@@ -6,9 +6,9 @@
       "category": "Christmas",
       "width": 1500,
       "height": 2000,
-      "sections": 352,
-      "colors": 21,
-      "hash": "578fcdebc7"
+      "sections": 388,
+      "colors": 20,
+      "hash": "9d1ca69e23"
     },
     {
       "id": "tree",
@@ -16,9 +16,9 @@
       "category": "Christmas",
       "width": 1500,
       "height": 2000,
-      "sections": 489,
-      "colors": 24,
-      "hash": "40058b819b"
+      "sections": 527,
+      "colors": 23,
+      "hash": "289a1e6056"
     },
     {
       "id": "fireside",
@@ -26,9 +26,9 @@
       "category": "Christmas",
       "width": 1500,
       "height": 2000,
-      "sections": 357,
-      "colors": 25,
-      "hash": "5c4fd10d26"
+      "sections": 373,
+      "colors": 23,
+      "hash": "d773cb0822"
     },
     {
       "id": "cottage",
@@ -36,9 +36,9 @@
       "category": "Winter",
       "width": 1500,
       "height": 2000,
-      "sections": 413,
-      "colors": 25,
-      "hash": "8471ed4de9"
+      "sections": 525,
+      "colors": 24,
+      "hash": "edf60de0c4"
     },
     {
       "id": "fox",
@@ -46,9 +46,9 @@
       "category": "Winter",
       "width": 1500,
       "height": 2000,
-      "sections": 286,
+      "sections": 340,
       "colors": 20,
-      "hash": "359abb39be"
+      "hash": "754e1f816d"
     },
     {
       "id": "woodland",
@@ -56,9 +56,9 @@
       "category": "Autumn",
       "width": 1500,
       "height": 2000,
-      "sections": 595,
+      "sections": 669,
       "colors": 19,
-      "hash": "2ae677062d"
+      "hash": "91c43dee4c"
     }
   ]
 }

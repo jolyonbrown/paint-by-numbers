@@ -14,8 +14,36 @@ export function rng(seed) {
 
 const f = (n) => +n.toFixed(1);
 
-export const svg = (body, bg = '#ffffff') =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">\n<rect width="${W}" height="${H}" fill="${bg}"/>\n${body}\n</svg>\n`;
+export const INK = '#2b2421';
+
+/**
+ * Wrap shapes in an SVG document. With outline (the default) every shape gets a dark ink stroke,
+ * like a colouring book; convert these with lineArt so the strokes become the puzzle's borders.
+ * Very small shapes (snow dots, tiny stars) are left unstroked so they don't vanish into ink.
+ */
+export function svg(body, bg = '#ffffff', { outline = true, ink = INK, width = 1.7 } = {}) {
+  if (outline) body = markSmall(body);
+  const style = outline
+    ? `<style>path:not([fill="none"]):not(.ns),rect:not(.ns),circle:not(.ns),ellipse:not(.ns),polygon:not(.ns){stroke:${ink};stroke-width:${width};stroke-linejoin:round}</style>\n`
+    : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">\n${style}<rect width="${W}" height="${H}" fill="${bg}" class="ns"/>\n${body}\n</svg>\n`;
+}
+
+function markSmall(body, min = 13) {
+  const num = (tag, name) => { const m = tag.match(new RegExp(`\\s${name}="([-\\d.]+)"`)); return m ? +m[1] : null; };
+  return body.replace(/<(circle|ellipse|rect|polygon)\b[^>]*>/g, (tag, kind) => {
+    let size = Infinity;
+    if (kind === 'circle') size = 2 * num(tag, 'r');
+    else if (kind === 'ellipse') size = 2 * Math.min(num(tag, 'rx'), num(tag, 'ry'));
+    else if (kind === 'rect') size = Math.min(num(tag, 'width'), num(tag, 'height'));
+    else {
+      const pts = (tag.match(/points="([^"]+)"/) || [, ''])[1].trim().split(/\s+/).map((p) => p.split(',').map(Number));
+      const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+      size = Math.min(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+    }
+    return size < min ? tag.replace(/^<(\w+)/, '<$1 class="ns"') : tag;
+  });
+}
 
 export const rect = (x, y, w, h, fill, extra = '') => `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" fill="${fill}" ${extra}/>`;
 export const circle = (cx, cy, r, fill, extra = '') => `<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" fill="${fill}" ${extra}/>`;

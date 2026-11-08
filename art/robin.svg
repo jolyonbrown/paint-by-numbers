@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 1000" width="750" height="1000">
-<rect width="750" height="1000" fill="#ffffff"/>
+<style>path:not([fill="none"]):not(.ns),rect:not(.ns),circle:not(.ns),ellipse:not(.ns),polygon:not(.ns){stroke:#2b2421;stroke-width:1.7;stroke-linejoin:round}</style>
+<rect width="750" height="1000" fill="#ffffff" class="ns"/>
 <g><rect x="0" y="0" width="750" height="1000" fill="#2d5a4a" />
 <circle cx="383.7" cy="529.9" r="78.6" fill="#41775f" />
 <circle cx="442.6" cy="850.8" r="73" fill="#5a8c72" />
@@ -122,23 +123,23 @@
 <g transform="rotate(-70 190 690) translate(190 690)"><polygon points="-65,0 -48.8,-8.9 -32.5,-22 -16.3,-16.4 0,-28 16.3,-16.4 32.5,-22 48.8,-8.9 65,0 65,0 48.8,8.9 32.5,22 16.3,16.4 0,28 -16.3,16.4 -32.5,22 -48.8,8.9 -65,0" fill="#1f5a36" />
 <polygon points="-65,0 -48.8,-8.9 -32.5,-22 -16.3,-16.4 0,-28 16.3,-16.4 32.5,-22 48.8,-8.9 65,0 65,0 -65,0" fill="#3d8a50" /></g>
 <circle cx="118" cy="718" r="15" fill="#c8202f" />
-<circle cx="112.8" cy="712.8" r="4.5" fill="#f6b3a8" />
+<circle class="ns" cx="112.8" cy="712.8" r="4.5" fill="#f6b3a8" />
 <circle cx="142" cy="725.5" r="15" fill="#c8202f" />
-<circle cx="136.8" cy="720.3" r="4.5" fill="#f6b3a8" />
+<circle class="ns" cx="136.8" cy="720.3" r="4.5" fill="#f6b3a8" />
 <circle cx="127" cy="742" r="15" fill="#c8202f" />
-<circle cx="121.8" cy="736.8" r="4.5" fill="#f6b3a8" />
+<circle class="ns" cx="121.8" cy="736.8" r="4.5" fill="#f6b3a8" />
 <circle cx="103" cy="737.5" r="15" fill="#c8202f" />
-<circle cx="97.8" cy="732.3" r="4.5" fill="#f6b3a8" />
+<circle class="ns" cx="97.8" cy="732.3" r="4.5" fill="#f6b3a8" />
 <g transform="rotate(20 640 740) translate(640 740)"><polygon points="-70,0 -52.5,-9.5 -35,-23.5 -17.5,-17.6 0,-30 17.5,-17.6 35,-23.5 52.5,-9.5 70,0 70,0 52.5,9.5 35,23.5 17.5,17.6 0,30 -17.5,17.6 -35,23.5 -52.5,9.5 -70,0" fill="#1f5a36" />
 <polygon points="-70,0 -52.5,-9.5 -35,-23.5 -17.5,-17.6 0,-30 17.5,-17.6 35,-23.5 52.5,-9.5 70,0 70,0 -70,0" fill="#3d8a50" /></g>
 <g transform="rotate(-40 700 700) translate(700 700)"><polygon points="-65,0 -48.8,-8.9 -32.5,-22 -16.3,-16.4 0,-28 16.3,-16.4 32.5,-22 48.8,-8.9 65,0 65,0 48.8,8.9 32.5,22 16.3,16.4 0,28 -16.3,16.4 -32.5,22 -48.8,8.9 -65,0" fill="#1f5a36" />
 <polygon points="-65,0 -48.8,-8.9 -32.5,-22 -16.3,-16.4 0,-28 16.3,-16.4 32.5,-22 48.8,-8.9 65,0 65,0 -65,0" fill="#3d8a50" /></g>
 <circle cx="650" cy="690" r="14" fill="#c8202f" />
-<circle cx="645.1" cy="685.1" r="4.2" fill="#f6b3a8" />
+<circle class="ns" cx="645.1" cy="685.1" r="4.2" fill="#f6b3a8" />
 <circle cx="672.4" cy="697" r="14" fill="#c8202f" />
-<circle cx="667.5" cy="692.1" r="4.2" fill="#f6b3a8" />
+<circle class="ns" cx="667.5" cy="692.1" r="4.2" fill="#f6b3a8" />
 <circle cx="658.4" cy="712.4" r="14" fill="#c8202f" />
-<circle cx="653.5" cy="707.5" r="4.2" fill="#f6b3a8" />
+<circle class="ns" cx="653.5" cy="707.5" r="4.2" fill="#f6b3a8" />
 <polygon points="520,560 690,610 700,640 680,660 510,615" fill="#6d533b" />
 <polygon points="530,585 690,630 684,650 520,610" fill="#8a6b4c" />
 <ellipse cx="410" cy="540" rx="165" ry="128" fill="#8a6b4c" transform="rotate(-12 410 540)"/>
@@ -202,12 +203,12 @@
 <ellipse cx="498" cy="499" rx="14" ry="9" fill="#8a6b4c" transform="rotate(-18 498 499)"/>
 <ellipse cx="524" cy="491" rx="14" ry="9" fill="#a8875f" transform="rotate(-18 524 491)"/>
 <circle cx="268" cy="396" r="15" fill="#1f1a19" />
-<circle cx="263" cy="391" r="5" fill="#f4f6f2" />
+<circle class="ns" cx="263" cy="391" r="5" fill="#f4f6f2" />
 <polygon points="214,402 168,414 212,426" fill="#3a302c" />
-<rect x="360" y="655" width="9" height="48" fill="#9a6b5a" />
-<rect x="408" y="655" width="9" height="46" fill="#9a6b5a" />
-<polygon points="340,702 390,700 392,709 340,711" fill="#9a6b5a" />
-<polygon points="390,698 440,696 442,705 390,707" fill="#9a6b5a" />
+<rect class="ns" x="360" y="655" width="9" height="48" fill="#9a6b5a" />
+<rect class="ns" x="408" y="655" width="9" height="46" fill="#9a6b5a" />
+<polygon class="ns" points="340,702 390,700 392,709 340,711" fill="#9a6b5a" />
+<polygon class="ns" points="390,698 440,696 442,705 390,707" fill="#9a6b5a" />
 <polygon points="801,927.2 584.6,849.5 583.2,853.2 799,932.8" fill="#5b4232" />
 <polygon points="789.4,923.8 749.4,944.1 791.8,929.3" fill="#173f2c" />
 <polygon points="793.3,925.2 770.2,886.7 787.9,927.9" fill="#2c6a45" />
@@ -235,51 +236,51 @@
 <polygon points="669.2,880.1 653.4,855.6 663.9,882.8" fill="#173f2c" />
 <polygon points="654.1,874.6 629.9,888.1 656.5,880.1" fill="#173f2c" />
 <polygon points="658,876 642.8,852.8 652.6,878.7" fill="#2c6a45" />
-<polygon points="642.8,870.5 620,883.4 645.2,876" fill="#2c6a45" />
+<polygon class="ns" points="642.8,870.5 620,883.4 645.2,876" fill="#2c6a45" />
 <polygon points="646.7,871.9 632.2,850 641.3,874.6" fill="#173f2c" />
-<polygon points="631.6,866.4 610,878.7 633.9,871.9" fill="#173f2c" />
+<polygon class="ns" points="631.6,866.4 610,878.7 633.9,871.9" fill="#173f2c" />
 <polygon points="635.4,867.8 621.5,847.2 630.1,870.5" fill="#2c6a45" />
-<polygon points="620.3,862.3 600.1,874.1 622.6,867.8" fill="#2c6a45" />
+<polygon class="ns" points="620.3,862.3 600.1,874.1 622.6,867.8" fill="#2c6a45" />
 <polygon points="624.1,863.7 610.9,844.4 618.8,866.4" fill="#173f2c" />
-<polygon points="609,858.1 590.1,869.4 611.4,863.7" fill="#173f2c" />
-<polygon points="612.9,859.5 600.3,841.5 607.5,862.3" fill="#2c6a45" />
-<polygon points="597.7,854 580.2,864.7 600.1,859.6" fill="#2c6a45" />
-<polygon points="601.6,855.4 589.7,838.7 596.2,858.2" fill="#173f2c" />
-<polygon points="586.5,849.9 570.2,860.1 588.8,855.5" fill="#173f2c" />
-<polygon points="590.3,851.3 579,835.9 585,854.1" fill="#2c6a45" />
+<polygon class="ns" points="609,858.1 590.1,869.4 611.4,863.7" fill="#173f2c" />
+<polygon class="ns" points="612.9,859.5 600.3,841.5 607.5,862.3" fill="#2c6a45" />
+<polygon class="ns" points="597.7,854 580.2,864.7 600.1,859.6" fill="#2c6a45" />
+<polygon class="ns" points="601.6,855.4 589.7,838.7 596.2,858.2" fill="#173f2c" />
+<polygon class="ns" points="586.5,849.9 570.2,860.1 588.8,855.5" fill="#173f2c" />
+<polygon class="ns" points="590.3,851.3 579,835.9 585,854.1" fill="#2c6a45" />
 <polygon points="782.1,1007.9 640,867.2 637.2,870 777.9,1012.1" fill="#5b4232" />
-<polygon points="773,999.9 728.2,1001.3 772.8,1005.9" fill="#173f2c" />
-<polygon points="775.9,1002.8 771.3,958.2 769.9,1003" fill="#2c6a45" />
-<polygon points="764.5,991.4 721.1,992.9 764.3,997.4" fill="#2c6a45" />
-<polygon points="767.4,994.3 762.9,951.1 761.4,994.5" fill="#173f2c" />
-<polygon points="756.1,983 714.1,984.5 755.9,989" fill="#173f2c" />
-<polygon points="759,985.9 754.5,944.1 753,986.1" fill="#2c6a45" />
-<polygon points="747.6,974.5 707,976 747.4,980.5" fill="#2c6a45" />
-<polygon points="750.5,977.4 746,937 744.5,977.6" fill="#173f2c" />
-<polygon points="739.1,966 700,967.6 738.9,972" fill="#173f2c" />
-<polygon points="742,968.9 737.6,930 736,969.1" fill="#2c6a45" />
-<polygon points="730.6,957.5 692.9,959.2 730.4,963.5" fill="#2c6a45" />
-<polygon points="733.5,960.4 729.2,922.9 727.5,960.6" fill="#173f2c" />
-<polygon points="722.1,949 685.9,950.7 721.9,955" fill="#173f2c" />
-<polygon points="725,951.9 720.7,915.9 719,952.1" fill="#2c6a45" />
-<polygon points="713.6,940.5 678.8,942.3 713.4,946.5" fill="#2c6a45" />
-<polygon points="716.5,943.4 712.3,908.8 710.5,943.6" fill="#173f2c" />
-<polygon points="705.2,932 671.8,933.9 704.9,938" fill="#173f2c" />
-<polygon points="708,934.9 703.9,901.8 702,935.2" fill="#2c6a45" />
-<polygon points="696.7,923.6 664.7,925.4 696.5,929.6" fill="#2c6a45" />
-<polygon points="699.6,926.5 695.4,894.7 693.6,926.7" fill="#173f2c" />
-<polygon points="688.2,915.1 657.7,917 688,921.1" fill="#173f2c" />
-<polygon points="691.1,918 687,887.7 685.1,918.2" fill="#2c6a45" />
-<polygon points="679.7,906.6 650.6,908.6 679.5,912.6" fill="#2c6a45" />
-<polygon points="682.6,909.5 678.6,880.6 676.6,909.7" fill="#173f2c" />
-<polygon points="671.2,898.1 643.6,900.1 671,904.1" fill="#173f2c" />
-<polygon points="674.1,901 670.1,873.6 668.1,901.2" fill="#2c6a45" />
-<polygon points="662.7,889.6 636.6,891.7 662.5,895.6" fill="#2c6a45" />
-<polygon points="665.6,892.5 661.7,866.6 659.6,892.7" fill="#173f2c" />
-<polygon points="654.2,881.1 629.5,883.3 654,887.1" fill="#173f2c" />
-<polygon points="657.1,884 653.3,859.5 651.1,884.2" fill="#2c6a45" />
-<polygon points="645.8,872.7 622.5,874.8 645.5,878.6" fill="#2c6a45" />
-<polygon points="648.6,875.5 644.8,852.5 642.7,875.8" fill="#173f2c" />
+<polygon class="ns" points="773,999.9 728.2,1001.3 772.8,1005.9" fill="#173f2c" />
+<polygon class="ns" points="775.9,1002.8 771.3,958.2 769.9,1003" fill="#2c6a45" />
+<polygon class="ns" points="764.5,991.4 721.1,992.9 764.3,997.4" fill="#2c6a45" />
+<polygon class="ns" points="767.4,994.3 762.9,951.1 761.4,994.5" fill="#173f2c" />
+<polygon class="ns" points="756.1,983 714.1,984.5 755.9,989" fill="#173f2c" />
+<polygon class="ns" points="759,985.9 754.5,944.1 753,986.1" fill="#2c6a45" />
+<polygon class="ns" points="747.6,974.5 707,976 747.4,980.5" fill="#2c6a45" />
+<polygon class="ns" points="750.5,977.4 746,937 744.5,977.6" fill="#173f2c" />
+<polygon class="ns" points="739.1,966 700,967.6 738.9,972" fill="#173f2c" />
+<polygon class="ns" points="742,968.9 737.6,930 736,969.1" fill="#2c6a45" />
+<polygon class="ns" points="730.6,957.5 692.9,959.2 730.4,963.5" fill="#2c6a45" />
+<polygon class="ns" points="733.5,960.4 729.2,922.9 727.5,960.6" fill="#173f2c" />
+<polygon class="ns" points="722.1,949 685.9,950.7 721.9,955" fill="#173f2c" />
+<polygon class="ns" points="725,951.9 720.7,915.9 719,952.1" fill="#2c6a45" />
+<polygon class="ns" points="713.6,940.5 678.8,942.3 713.4,946.5" fill="#2c6a45" />
+<polygon class="ns" points="716.5,943.4 712.3,908.8 710.5,943.6" fill="#173f2c" />
+<polygon class="ns" points="705.2,932 671.8,933.9 704.9,938" fill="#173f2c" />
+<polygon class="ns" points="708,934.9 703.9,901.8 702,935.2" fill="#2c6a45" />
+<polygon class="ns" points="696.7,923.6 664.7,925.4 696.5,929.6" fill="#2c6a45" />
+<polygon class="ns" points="699.6,926.5 695.4,894.7 693.6,926.7" fill="#173f2c" />
+<polygon class="ns" points="688.2,915.1 657.7,917 688,921.1" fill="#173f2c" />
+<polygon class="ns" points="691.1,918 687,887.7 685.1,918.2" fill="#2c6a45" />
+<polygon class="ns" points="679.7,906.6 650.6,908.6 679.5,912.6" fill="#2c6a45" />
+<polygon class="ns" points="682.6,909.5 678.6,880.6 676.6,909.7" fill="#173f2c" />
+<polygon class="ns" points="671.2,898.1 643.6,900.1 671,904.1" fill="#173f2c" />
+<polygon class="ns" points="674.1,901 670.1,873.6 668.1,901.2" fill="#2c6a45" />
+<polygon class="ns" points="662.7,889.6 636.6,891.7 662.5,895.6" fill="#2c6a45" />
+<polygon class="ns" points="665.6,892.5 661.7,866.6 659.6,892.7" fill="#173f2c" />
+<polygon class="ns" points="654.2,881.1 629.5,883.3 654,887.1" fill="#173f2c" />
+<polygon class="ns" points="657.1,884 653.3,859.5 651.1,884.2" fill="#2c6a45" />
+<polygon class="ns" points="645.8,872.7 622.5,874.8 645.5,878.6" fill="#2c6a45" />
+<polygon class="ns" points="648.6,875.5 644.8,852.5 642.7,875.8" fill="#173f2c" />
 <polygon points="-39.2,962.9 173,905 172,901.1 -40.8,957.1" fill="#5b4232" />
 <polygon points="-27.8,959 -6.6,919.4 -32.9,955.8" fill="#173f2c" />
 <polygon points="-31.7,960.1 9.2,978.4 -28.9,954.8" fill="#2c6a45" />
@@ -314,35 +315,35 @@
 <polygon points="146.1,912.4 155.8,891.2 141,909.2" fill="#2c6a45" />
 <polygon points="142.1,913.5 164,921.7 144.9,908.2" fill="#173f2c" />
 <polygon points="157.7,909.3 166.7,889.3 152.6,906.1" fill="#173f2c" />
-<polygon points="153.7,910.4 174.3,917.9 156.5,905.1" fill="#2c6a45" />
+<polygon class="ns" points="153.7,910.4 174.3,917.9 156.5,905.1" fill="#2c6a45" />
 <polygon points="169.3,906.2 177.5,887.4 164.2,903" fill="#2c6a45" />
-<polygon points="165.3,907.3 184.7,914.1 168.1,902" fill="#173f2c" />
+<polygon class="ns" points="165.3,907.3 184.7,914.1 168.1,902" fill="#173f2c" />
 <circle cx="560" cy="900" r="15" fill="#c8202f" />
-<circle cx="554.8" cy="894.8" r="4.5" fill="#f6b3a8" />
+<circle class="ns" cx="554.8" cy="894.8" r="4.5" fill="#f6b3a8" />
 <circle cx="584" cy="907.5" r="15" fill="#c8202f" />
-<circle cx="578.8" cy="902.3" r="4.5" fill="#f6b3a8" />
+<circle class="ns" cx="578.8" cy="902.3" r="4.5" fill="#f6b3a8" />
 <circle cx="569" cy="924" r="15" fill="#c8202f" />
-<circle cx="563.8" cy="918.8" r="4.5" fill="#f6b3a8" />
+<circle class="ns" cx="563.8" cy="918.8" r="4.5" fill="#f6b3a8" />
 <circle cx="545" cy="919.5" r="15" fill="#c8202f" />
-<circle cx="539.8" cy="914.3" r="4.5" fill="#f6b3a8" />
+<circle class="ns" cx="539.8" cy="914.3" r="4.5" fill="#f6b3a8" />
 <circle cx="150" cy="880" r="14" fill="#c8202f" />
-<circle cx="145.1" cy="875.1" r="4.2" fill="#f6b3a8" />
+<circle class="ns" cx="145.1" cy="875.1" r="4.2" fill="#f6b3a8" />
 <circle cx="172.4" cy="887" r="14" fill="#c8202f" />
-<circle cx="167.5" cy="882.1" r="4.2" fill="#f6b3a8" />
+<circle class="ns" cx="167.5" cy="882.1" r="4.2" fill="#f6b3a8" />
 <circle cx="158.4" cy="902.4" r="14" fill="#c8202f" />
-<circle cx="153.5" cy="897.5" r="4.2" fill="#f6b3a8" />
-<circle cx="602.4" cy="472" r="4" fill="#f4f6f2" />
-<circle cx="33" cy="30.2" r="5.5" fill="#f4f6f2" />
+<circle class="ns" cx="153.5" cy="897.5" r="4.2" fill="#f6b3a8" />
+<circle class="ns" cx="602.4" cy="472" r="4" fill="#f4f6f2" />
+<circle class="ns" cx="33" cy="30.2" r="5.5" fill="#f4f6f2" />
 <circle cx="375.9" cy="16.2" r="7.5" fill="#f4f6f2" />
-<circle cx="683.8" cy="245" r="5.4" fill="#f4f6f2" />
-<circle cx="84.7" cy="155.9" r="4.1" fill="#f4f6f2" />
+<circle class="ns" cx="683.8" cy="245" r="5.4" fill="#f4f6f2" />
+<circle class="ns" cx="84.7" cy="155.9" r="4.1" fill="#f4f6f2" />
 <circle cx="311.2" cy="757.9" r="7.1" fill="#f4f6f2" />
-<circle cx="296.5" cy="857.7" r="5.9" fill="#f4f6f2" />
+<circle class="ns" cx="296.5" cy="857.7" r="5.9" fill="#f4f6f2" />
 <circle cx="233.3" cy="620.4" r="6.6" fill="#f4f6f2" />
 <circle cx="497.8" cy="393.7" r="6.8" fill="#f4f6f2" />
-<circle cx="347.7" cy="405" r="5.7" fill="#f4f6f2" />
+<circle class="ns" cx="347.7" cy="405" r="5.7" fill="#f4f6f2" />
 <circle cx="724.3" cy="306.4" r="6.5" fill="#f4f6f2" />
-<circle cx="49" cy="633.7" r="4.5" fill="#f4f6f2" />
+<circle class="ns" cx="49" cy="633.7" r="4.5" fill="#f4f6f2" />
 <circle cx="472.6" cy="222" r="7.2" fill="#f4f6f2" />
 <circle cx="547.1" cy="196.5" r="7.8" fill="#f4f6f2" /></g>
 </svg>

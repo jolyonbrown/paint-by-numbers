@@ -10,6 +10,10 @@
 //   --size N          output resolution: length of the longer side in pixels (default 2000)
 //   --smooth N        speck-smoothing passes (default 2; 0 to disable)
 //   --merge-delta N   merge palette colours closer than this (CIE76 delta-E, default 7)
+//   --line-art        the image has dark outlines (like a colouring book): use them as the
+//                     section borders instead of making them sections to colour
+//   --line-dark N     line art: colours darker than this lightness count as outline ink (0-100, default 30)
+//   --line-max N      line art: dark strokes up to this many pixels wide are outlines (default 10)
 //   --out DIR         output folder (default: pictures)
 //   --preview FILE    also write a full-size PNG preview of the result (colours + outlines)
 //   --no-index        don't add/update the entry in <out>/index.json
@@ -22,10 +26,10 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { loadImage, resize, savePNG } from './lib/image-io.mjs';
 import { quantize, rgbToLab, dist2, hex } from './lib/color.mjs';
-import { modeFilter, components, mergeTiny, boundaryDistance, placeLabels, traceOutlines } from './lib/segment.mjs';
+import { LINE, modeFilter, components, mergeTiny, boundaryDistance, placeLabels, traceOutlines, rasterizeOutlines, findLines, absorbLines } from './lib/segment.mjs';
 import { VarintWriter, toBase64 } from './lib/encode.mjs';
 
-export const DEFAULTS = { colors: 24, minArea: 40, minWidth: 4, size: 2000, smooth: 2, mergeDelta: 7, out: 'pictures', thumbSize: 720 };
+export const DEFAULTS = { colors: 24, minArea: 40, minWidth: 4, size: 2000, smooth: 2, mergeDelta: 7, lineArt: false, lineDark: 30, lineMax: 10, out: 'pictures', thumbSize: 720 };
 
 export async function convert(input, opts = {}) {
   const o = { ...DEFAULTS, ...opts };
@@ -61,12 +65,24 @@ export async function convert(input, opts = {}) {
 
   // 3. Smooth away specks, then merge sections too small or thin to tap.
   if (o.smooth > 0) index = modeFilter(index, W, H, o.smooth);
-  const labDist = (a, b) => Math.sqrt(dist2(labs[a], labs[b]));
+  // Line art: thin dark strokes become borders, not sections.
+  let lineWidth = null;
+  if (o.lineArt) {
+    const isDark = new Uint8Array(256);
+    labs.forEach(([L], i) => { if (L < o.lineDark) isDark[i] = 1; });
+    const { mask, width } = findLines(index, W, H, isDark, o.lineMax);
+    let n = 0;
+    for (let i = 0; i < index.length; i++) if (mask[i]) { index[i] = LINE; n++; }
+    // Draw the puzzle's lines a little thinner than the source strokes.
+    lineWidth = Math.round(Math.max(1.6, Math.min(4, width * 0.8)) * 10) / 10;
+    log(`  line art: ${((100 * n) / index.length).toFixed(1)}% of pixels are outlines, stroke ~${width.toFixed(1)}px -> lines ${lineWidth}px`);
+  }
+  const labDist = (a, b) => (a === LINE || b === LINE ? 0 : Math.sqrt(dist2(labs[a], labs[b])));
   mergeTiny(index, W, H, { minArea: o.minArea, minWidth: o.minWidth, labDist, log });
 
   // 4. Renumber colours: drop unused ones, order by hue so the colour row reads like a gradient.
   const used = new Array(palette.length).fill(0);
-  for (let i = 0; i < index.length; i++) used[index[i]]++;
+  for (let i = 0; i < index.length; i++) if (index[i] !== LINE) used[index[i]]++;
   const live = palette.map((_, i) => i).filter((i) => used[i] > 0);
   const sortKey = (i) => {
     const [L, a, b] = labs[i];
@@ -79,17 +95,22 @@ export async function convert(input, opts = {}) {
   live.sort((a, b) => sortKey(a) - sortKey(b));
   const newIndexOf = new Int32Array(palette.length).fill(-1);
   live.forEach((old, ni) => { newIndexOf[old] = ni; });
-  for (let i = 0; i < index.length; i++) index[i] = newIndexOf[index[i]];
+  for (let i = 0; i < index.length; i++) if (index[i] !== LINE) index[i] = newIndexOf[index[i]];
   const finalPalette = live.map((i) => palette[i]);
 
   // 5. Final sections, number positions and outlines.
-  const { labels, count, color } = components(index, W, H);
+  const { labels: rawLabels, count, color } = components(index, W, H, LINE);
+  // Line art: outlines kept same-coloured areas apart; now hand each outline pixel to its nearest section.
+  if (o.lineArt) absorbLines(rawLabels, W, H);
   if (count > 65535) throw new Error(`Too many sections (${count}); raise --min-area or lower --size`);
+  // Smoothed outlines (quantised to quarter pixels, exactly as stored), then redraw the section
+  // map from them so colours and lines always agree (no slivers peeking past a line).
+  const chains = traceOutlines(rawLabels, W, H).map((c) => ({ ...c, pts: c.pts.map((v) => Math.round(v * 4)) }));
+  const { labels, restored } = rasterizeOutlines(chains, W, H, rawLabels, count);
   const dist = boundaryDistance(labels, W, H);
   const labelList = placeLabels(labels, count, dist, W, H);
-  const chains = traceOutlines(labels, W, H);
-  const nPts = chains.reduce((s, c) => s + c.length / 2, 0);
-  log(`  ${finalPalette.length} colours, ${count} sections, ${labelList.length / 4} numbers, ${chains.length} outline chains (${nPts} points)`);
+  const nPts = chains.reduce((s, c) => s + c.pts.length / 2, 0);
+  log(`  ${finalPalette.length} colours, ${count} sections, ${labelList.length / 4} numbers, ${chains.length} outline chains (${nPts} points)${restored ? `, ${restored} px kept from tiny sections` : ''}`);
 
   // 6. Encode.
   const mapW = new VarintWriter();
@@ -107,16 +128,17 @@ export async function convert(input, opts = {}) {
   const linW = new VarintWriter();
   linW.u(chains.length);
   let px = 0, py = 0;
-  for (const c of chains) {
+  for (const { pts: c } of chains) {
     linW.u(c.length / 2);
     for (let i = 0; i < c.length; i += 2) {
-      const x = Math.round(c[i] * 4), y = Math.round(c[i + 1] * 4);
+      const x = c[i], y = c[i + 1];
       linW.s(x - px); linW.s(y - py);
       px = x; py = y;
     }
   }
   const puzzle = {
     format: 1,
+    ...(lineWidth ? { lineWidth } : {}),
     id: o.id,
     title: o.title,
     category: o.category || '',
@@ -210,10 +232,11 @@ function renderPreview(labels, color, palette, W, H) {
 // ---- CLI ----
 function parseArgs(argv) {
   const opts = {}, rest = [];
-  const num = { '--colors': 'colors', '--min-area': 'minArea', '--min-width': 'minWidth', '--size': 'size', '--smooth': 'smooth', '--merge-delta': 'mergeDelta' };
+  const num = { '--colors': 'colors', '--min-area': 'minArea', '--min-width': 'minWidth', '--size': 'size', '--smooth': 'smooth', '--merge-delta': 'mergeDelta', '--line-dark': 'lineDark', '--line-max': 'lineMax' };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (num[a]) opts[num[a]] = Number(argv[++i]);
+    else if (a === '--line-art') opts.lineArt = true;
     else if (a === '--id') opts.id = argv[++i];
     else if (a === '--title') opts.title = argv[++i];
     else if (a === '--category') opts.category = argv[++i];

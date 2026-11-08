@@ -84,12 +84,17 @@ All paths in the app are relative, so it works under `/paint-by-numbers/`.
   smooths specks with a majority filter and finds connected sections, merging any too small or
   thin to tap into their longest-bordering neighbour. Number positions come from a distance
   transform (the point furthest inside each section, plus extra spots in big sections). Section
-  borders are traced into shared polylines and smoothed. Everything is stored as run-length and
+  borders are traced into shared polylines and smoothed, and the section map is then redrawn
+  from those smoothed lines, so colours and lines always agree (nothing peeks out past a line).
+  In line-art mode, thin dark outlines in the source become the borders instead of sections.
+  Everything is stored as run-length and
   varint data in `pictures/<id>/puzzle.json`. A small `thumb.json` and `lines.png` drive the menu
   thumbnails.
 - **`js/puzzle-view.js`** draws from offscreen canvases: filled colours, shading for the selected
   colour, and pre-rendered outlines. When zoomed in it switches to crisp vector outlines, culled
-  to the screen. Taps are looked up in the section-ID map, with a little forgiveness for tiny
+  to the screen. It only redraws when the view is still: while fingers or momentum move the
+  picture, the drawn canvas is moved with a GPU transform over a low-res overview, and fill
+  animations redraw just their own rectangle. Taps are looked up in the section-ID map, with a little forgiveness for tiny
   sections near the finger.
 - **`js/game.js`** handles the rules, the colour row, hints, saving (`localStorage`, wrapped in
   try/catch) and the finish. The fill order is saved so the finish can replay it.
