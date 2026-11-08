@@ -64,7 +64,7 @@ in the Claude Code environment; elsewhere run `npm i -D playwright && npx playwr
 
 | Command | What it does |
 | --- | --- |
-| `node tools/convert.mjs <image> --id … [options]` | Convert one PNG/JPG into a puzzle (`--help` lists options) |
+| `node tools/convert.mjs <image> --id … [options]` | Convert one PNG/JPG into a puzzle (`--help` lists options; `--line-art`, `--keep-ink` and `--photo` pick the mode, see the picture guide) |
 | `node tools/build-pictures.mjs [ids…] [--preview]` | Rebuild pictures listed in `art/pictures.json` (regenerates the SVG placeholders first) |
 | `node tools/update-sw.mjs` | Regenerate the service worker's file list and bump its cache version. **Run before every release** |
 | `node tools/smoke-test.cjs [--shots]` | Open every picture on an emulated iPad, tap-fill, finish it, check the completion card and console |
@@ -86,7 +86,10 @@ All paths in the app are relative, so it works under `/paint-by-numbers/`.
   transform (the point furthest inside each section, plus extra spots in big sections). Section
   borders are traced into shared polylines and smoothed, and the section map is then redrawn
   from those smoothed lines, so colours and lines always agree (nothing peeks out past a line).
-  In line-art mode, thin dark outlines in the source become the borders instead of sections.
+  In line-art mode, thin dark outlines in the source become the borders instead of sections, and
+  with `keepInk` the source's detail strokes are kept as a vector ink layer. Photo mode adds an
+  edge-preserving bilateral filter, a Gaussian majority vote and a contrast-aware merge
+  (`tools/lib/photo.mjs`) so photos and paintings don't break into confetti.
   Everything is stored as run-length and
   varint data in `pictures/<id>/puzzle.json`. A small `thumb.json` and `lines.png` drive the menu
   thumbnails.

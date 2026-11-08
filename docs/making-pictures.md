@@ -112,6 +112,9 @@ of these:
    | `lineArt` | false | The picture has dark outlines: use them as the borders between sections (and keep same-coloured neighbours apart) instead of making them sections to colour. The puzzle's lines are drawn about as bold as the originals |
    | `lineDark` | 30 | Line art: how dark (lightness 0–100) ink must be to count as an outline. Raise a little if outlines are dark grey or brown |
    | `lineMax` | 10 | Line art: dark strokes up to this many pixels wide are outlines; wider dark areas (a hat, a cat) stay colourable |
+   | `keepInk` | false | Line art: also keep dark detail strokes *inside* areas (eyes, whiskers, beard curls, folds, painted lines on glass) as a crisp ink layer over the colours. Without it, a stroke that doesn't separate two areas disappears. Section borders are then drawn thin and the source's own strokes give the bold lines |
+   | `photo` | false | For photos, paintings and soft or painterly AI images: smooths texture and gradients first (edge-preserving), rounds off ragged borders, merges faint blotches and adds colours for small distinctive areas. Slower (~10 s). Changes the defaults to `colors` 30, `minArea` 100, `minWidth` 6 |
+   | `contrast` | 12 | Photo mode: how different a small area must be from its neighbours to stay separate. Raise (15–20) for fewer, bigger sections; lower (6–8) for more detail |
 
    Rough guide: 300–1,500 sections is a relaxing session; 2,000+ is a long project.
 
@@ -133,6 +136,73 @@ node tools/convert.mjs path/to/image.png --id owl --title "Snowy Owl" --category
 
 > **Re-converting a picture resets its saved progress** (the sections change, so old progress
 > can't be applied). Avoid re-converting pictures she's part-way through.
+
+## Which mode for which picture
+
+| Picture looks like… | Options |
+| --- | --- |
+| Flat colours with bold outlines (colouring book coloured in, stickers, cartoons) | `"lineArt": true` |
+| …with lots of small drawn details inside shapes (faces, fur strokes, folds) | `"lineArt": true, "keepInk": true` |
+| Stained glass (real or generated) | `"lineArt": true, "keepInk": true`, and raise `lineDark` (35–45) if painted detail lines are dark grey rather than black |
+| Flat colours without outlines (vector art, paper cut-out, posters) | defaults |
+| Photo, painting, soft or painterly AI image | `"photo": true` (busy backgrounds like leaves turn into smooth "camouflage" blobs, so pictures with a clear subject or simple background work best) |
+
+Always look at the `--preview` image before adding a picture; try a second mode if the first looks blotchy.
+
+## Ready-made pictures you can use
+
+Everything in `art/` is published in a public repository, so a picture must be **public domain
+or CC0** (or a licence that allows redistribution). Record where it came from in
+`art/CREDITS.md` and in the entry's `"credit"` field.
+
+Good sources:
+
+- **The Met Open Access** ([metmuseum.org/art/collection](https://www.metmuseum.org/art/collection)):
+  look for objects marked *Public Domain*. Medieval **stained glass** converts beautifully (see
+  the Saint Nicholas window). Japanese woodblock snow scenes (Hiroshige, Hokusai) are lovely
+  but need cropping (paper border, text) and `photo` mode.
+- **Smithsonian / Cooper Hewitt**, **Library of Congress** (WPA posters: "no known restrictions"),
+  **Rijksmuseum** (check each item: most are CC0, some are CC BY).
+- **OpenClipart** (everything CC0; the style fits but most art is simple).
+
+Avoid Pixabay, Freepik, Vecteezy and similar stock sites: their licences don't allow putting the
+files themselves in a public repository.
+
+## Generating pictures with AI
+
+What we found (November 2026):
+
+- **ChatGPT** (OpenAI image models) and the **Gemini app** are free to try and are good at busy,
+  detailed scenes. Both let you keep and publish what they make. In Gemini, turn off the visible
+  watermark in settings. Save the PNG and convert with `lineArt`.
+- **Recraft** generates real vector art (SVG), which drops straight into `art/` (SVGs are
+  rasterised automatically). You need a paid plan (from $12/month) to own the images; on the free
+  plan Recraft owns them, so don't use free-plan images.
+- **Midjourney** works but has no official API; images are public unless you pay for Stealth mode.
+
+Prompt templates that work well:
+
+1. **Coloured colouring book** (convert with `lineArt` + `keepInk`):
+   > Coloured-in colouring book page, portrait 3:4. Every shape enclosed by a bold, uniform black
+   > outline with no gaps. Each area one flat solid colour; no gradients, shading, highlights, glow
+   > or texture. About 20 distinct colours. Busy Christmas market at dusk: wooden stalls, garlands,
+   > baubles, gingerbread, lanterns, people in scarves, falling snow, lots of small distinct
+   > shapes. Blank signs, no text.
+2. **Stained glass** (`lineArt` + `keepInk`):
+   > Stained-glass window filling the whole frame, portrait 3:4. Thick, uniform dark lead lines
+   > separate every pane. Each pane is one flat jewel colour, no glass texture, glow or gradient.
+   > Snowy village church at night with a star, pine trees, carollers and lit windows. No text.
+3. **Vector illustration** (Recraft vector, or any generator; defaults or `lineArt`):
+   > Detailed flat vector illustration of a cosy living room on Christmas Eve: fireplace,
+   > stockings, a decorated tree, wrapped presents, a sleeping cat, a patterned rug. Clean vector
+   > paths, bold dark outlines around every shape. Flat colors only — no gradients, shadows, or
+   > texture. Palette: deep red, forest green, gold, cream, navy.
+4. **Folk art** (generators with a negative prompt, such as Ideogram or Recraft):
+   > Scandinavian folk-art snowy village, symmetrical motifs, bold outlines, flat colours, portrait
+   >
+   > Negative prompt: gradient, shading, glow, texture, noise, watercolour, photo, text, watermark
+
+If a generated picture comes out soft or painterly anyway, use `photo` mode instead of `lineArt`.
 
 ## The placeholder pictures
 

@@ -138,6 +138,19 @@ export class PuzzleView {
     const LW = this.lineWidth = Math.max(LINE_WIDTH, this.pz.lineWidth || 0);
     lc.lineWidth = LW; lc.lineJoin = 'round'; lc.lineCap = 'round'; lc.strokeStyle = LINE;
     lc.stroke(all);
+    // Ink layer (detail strokes from line-art sources), filled as crisp vector shapes.
+    this.inkPath = null;
+    if (this.pz.ink && this.pz.ink.length) {
+      const ip = new Path2D();
+      for (const pts of this.pz.ink) {
+        ip.moveTo(pts[0], pts[1]);
+        for (let i = 2; i < pts.length; i += 2) ip.lineTo(pts[i], pts[i + 1]);
+        ip.closePath();
+      }
+      this.inkPath = ip;
+      lc.fillStyle = LINE;
+      lc.fill(ip, 'evenodd');
+    }
     lc.strokeRect(LW / 2, LW / 2, W - LW, H - LW);
 
     // Low-res overview of the whole picture, shown under the main canvas while the view moves.
@@ -670,6 +683,7 @@ export class PuzzleView {
           ctx.stroke(c.path);
         }
         ctx.strokeRect(lw / 2, lw / 2, W - lw, H - lw);
+        if (this.inkPath) { ctx.fillStyle = LINE; ctx.fill(this.inkPath, 'evenodd'); }
       }
       ctx.globalAlpha = 1;
     }

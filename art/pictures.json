@@ -25,6 +25,22 @@
       }
     },
     {
+      "id": "nicholas",
+      "title": "Saint Nicholas Window",
+      "category": "Christmas",
+      "source": "nicholas.jpg",
+      "credit": "Saint Nicholas, stained glass, Austria 1340–50. The Metropolitan Museum of Art, The Cloisters Collection, 1965. Public domain (CC0). https://www.metmuseum.org/art/collection/search/471939",
+      "options": {
+        "colors": 30,
+        "size": 2400,
+        "lineArt": true,
+        "keepInk": true,
+        "lineDark": 38,
+        "lineMax": 12,
+        "minArea": 60
+      }
+    },
+    {
       "id": "house",
       "title": "Christmas House",
       "category": "Christmas",
