@@ -74,24 +74,28 @@ export function decodePuzzle(json) {
     if (pole[s] < 0) pole[s] = i;
   }
 
-  // Outlines: polylines in pixel units.
-  const cr = new Reader(fromBase64(json.lines));
-  const nc = cr.u();
-  const chains = [];
-  let px = 0, py = 0;
-  for (let c = 0; c < nc; c++) {
-    const n = cr.u();
-    const pts = new Float32Array(n * 2);
-    for (let i = 0; i < n; i++) {
-      px += cr.s(); py += cr.s();
-      pts[i * 2] = px / 4; pts[i * 2 + 1] = py / 4;
+  // Outlines (polylines) and the optional ink layer (closed shapes), in pixel units.
+  const readChains = (b64) => {
+    const cr = new Reader(fromBase64(b64));
+    const nc = cr.u(), out = [];
+    let px = 0, py = 0;
+    for (let c = 0; c < nc; c++) {
+      const n = cr.u();
+      const pts = new Float32Array(n * 2);
+      for (let i = 0; i < n; i++) {
+        px += cr.s(); py += cr.s();
+        pts[i * 2] = px / 4; pts[i * 2 + 1] = py / 4;
+      }
+      out.push(pts);
     }
-    chains.push(pts);
-  }
+    return out;
+  };
+  const chains = readChains(json.lines);
+  const ink = json.ink ? readChains(json.ink) : [];
 
   // Sections per colour.
   const colorSections = palette.map(() => []);
   for (let s = 0; s < S; s++) colorSections[sectionColor[s]].push(s);
 
-  return { id: json.id, title: json.title, hash: json.hash, lineWidth: json.lineWidth || 1.6, W, H, S, map, sectionColor, palette, paletteHex: json.palette, bbox, area, labels, pole, chains, colorSections };
+  return { id: json.id, title: json.title, hash: json.hash, lineWidth: json.lineWidth || 1.6, W, H, S, map, sectionColor, palette, paletteHex: json.palette, bbox, area, labels, pole, chains, ink, colorSections };
 }

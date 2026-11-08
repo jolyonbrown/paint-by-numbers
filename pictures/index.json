@@ -21,6 +21,16 @@
       "hash": "8ad121e6e7"
     },
     {
+      "id": "nicholas",
+      "title": "Saint Nicholas Window",
+      "category": "Christmas",
+      "width": 1369,
+      "height": 2400,
+      "sections": 2632,
+      "colors": 30,
+      "hash": "5681652cca"
+    },
+    {
       "id": "house",
       "title": "Christmas House",
       "category": "Christmas",

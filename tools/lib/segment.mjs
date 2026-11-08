@@ -66,13 +66,13 @@ export function components(index, w, h, barrier = -1) {
  * (a pixel with a differently-labelled 4-neighbour, or on the image edge).
  * Felzenszwalb & Huttenlocher's linear-time algorithm.
  */
-export function boundaryDistance(labels, w, h) {
-  const feature = new Uint8Array(w * h);
+export function boundaryDistance(labels, w, h, extra = null) {
+  const feature = extra ? Uint8Array.from(extra) : new Uint8Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const p = y * w + x, l = labels[p];
-      feature[p] = x === 0 || y === 0 || x === w - 1 || y === h - 1 ||
-        labels[p - 1] !== l || labels[p + 1] !== l || labels[p - w] !== l || labels[p + w] !== l ? 1 : 0;
+      if (x === 0 || y === 0 || x === w - 1 || y === h - 1 ||
+        labels[p - 1] !== l || labels[p + 1] !== l || labels[p - w] !== l || labels[p + w] !== l) feature[p] = 1;
     }
   }
   return edt(feature, w, h);
@@ -454,4 +454,31 @@ export function absorbLines(labels, w, h) {
   }
   for (let p = 0; p < n; p++) if (labels[p] < 0) labels[p] = 0;
   return labels;
+}
+
+/**
+ * Ink layer for line art: the source's dark strokes as filled vector shapes (closed loops in
+ * pixel units), so detail lines inside a section (eyes, whiskers, folds, painted shading lines)
+ * survive even though they don't separate sections. Specks under minSpeck pixels are dropped.
+ */
+export function inkShapes(mask, w, h, { minSpeck = 10 } = {}) {
+  const PW = w + 2, PH = h + 2;
+  const lab = new Int32Array(PW * PH);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (mask[y * w + x]) lab[(y + 1) * PW + x + 1] = 1;
+  // Close diagonal-only touches so every boundary vertex has degree 2 (clean closed loops).
+  for (let y = 0; y < PH - 1; y++) for (let x = 0; x < PW - 1; x++) {
+    const p = y * PW + x, a = lab[p], b = lab[p + 1], c = lab[p + PW], d = lab[p + PW + 1];
+    if (a === d && b === c && a !== b) { if (a) { lab[p + 1] = 1; lab[p + PW] = 1; } else { lab[p] = 1; lab[p + PW + 1] = 1; } }
+  }
+  // Drop tiny ink specks and tiny holes.
+  for (const target of [1, 0]) {
+    const inv = Int32Array.from(lab, (v) => (v === target ? 1 : 0));
+    const { labels, count } = components(inv, PW, PH, 0);
+    const area = new Int32Array(count);
+    for (let i = 0; i < labels.length; i++) if (labels[i] >= 0) area[labels[i]]++;
+    for (let i = 0; i < labels.length; i++) if (labels[i] >= 0 && area[labels[i]] < minSpeck) lab[i] = 1 - target;
+  }
+  for (let x = 0; x < PW; x++) { lab[x] = 0; lab[(PH - 1) * PW + x] = 0; }
+  for (let y = 0; y < PH; y++) { lab[y * PW] = 0; lab[y * PW + PW - 1] = 0; }
+  return traceOutlines(lab, PW, PH, { tolerance: 0.2 }).map(({ pts }) => pts.map((v) => v - 1));
 }
