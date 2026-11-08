@@ -1,6 +1,27 @@
 {
   "pictures": [
     {
+      "id": "window",
+      "title": "Stained Glass Window",
+      "category": "Christmas",
+      "source": "window.svg",
+      "options": {
+        "colors": 30,
+        "lineArt": true,
+        "lineMax": 16
+      }
+    },
+    {
+      "id": "house",
+      "title": "Christmas House",
+      "category": "Christmas",
+      "source": "house.svg",
+      "options": {
+        "colors": 30,
+        "lineArt": true
+      }
+    },
+    {
       "id": "robin",
       "title": "Robin",
       "category": "Christmas",

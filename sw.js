@@ -1,7 +1,7 @@
 // Service worker: pre-caches the whole app so it works offline, serves from cache, and refreshes
 // the cache in the background. VERSION and FILES are rewritten by `node tools/update-sw.mjs`;
 // run that before every release so iPads pick up the new version.
-const VERSION = 'v2026-11-08.2';
+const VERSION = 'v2026-11-08.3';
 const FILES = [
   './',
   'css/style.css',
@@ -28,6 +28,9 @@ const FILES = [
   'pictures/fox/lines.png',
   'pictures/fox/puzzle.json',
   'pictures/fox/thumb.json',
+  'pictures/house/lines.png',
+  'pictures/house/puzzle.json',
+  'pictures/house/thumb.json',
   'pictures/index.json',
   'pictures/robin/lines.png',
   'pictures/robin/puzzle.json',
@@ -35,6 +38,9 @@ const FILES = [
   'pictures/tree/lines.png',
   'pictures/tree/puzzle.json',
   'pictures/tree/thumb.json',
+  'pictures/window/lines.png',
+  'pictures/window/puzzle.json',
+  'pictures/window/thumb.json',
   'pictures/woodland/lines.png',
   'pictures/woodland/puzzle.json',
   'pictures/woodland/thumb.json',
