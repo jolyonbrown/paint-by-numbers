@@ -1,6 +1,19 @@
 {
   "pictures": [
     {
+      "id": "market",
+      "title": "Christmas Market",
+      "category": "Christmas",
+      "source": "market.svg",
+      "options": {
+        "colors": 30,
+        "lineArt": true,
+        "size": 2400,
+        "mergeDelta": 6,
+        "lineMax": 16
+      }
+    },
+    {
       "id": "window",
       "title": "Stained Glass Window",
       "category": "Christmas",

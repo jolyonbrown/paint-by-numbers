@@ -1,6 +1,16 @@
 {
   "pictures": [
     {
+      "id": "market",
+      "title": "Christmas Market",
+      "category": "Christmas",
+      "width": 1800,
+      "height": 2400,
+      "sections": 2196,
+      "colors": 29,
+      "hash": "20d08c67e9"
+    },
+    {
       "id": "window",
       "title": "Stained Glass Window",
       "category": "Christmas",
