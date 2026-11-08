@@ -1,5 +1,8 @@
-// Segmentation: speck smoothing, connected sections, tiny-section merging, distance transform,
+// Segmentation: speck smoothing, line-art outlines, connected sections, tiny-section merging, distance transform,
 // number placement and outline tracing. Everything works on flat typed arrays (row-major).
+
+/** Palette index used for outline pixels in line-art mode (never a real colour). */
+export const LINE = 255;
 
 /** 3x3 majority filter on a palette-index map. Removes specks and anti-aliasing fringes. */
 export function modeFilter(index, w, h, passes = 2) {
@@ -33,14 +36,14 @@ export function modeFilter(index, w, h, passes = 2) {
 }
 
 /** 4-connected component labelling. Returns { labels: Int32Array, count, color: Int32Array (palette idx per label) }. */
-export function components(index, w, h) {
+export function components(index, w, h, barrier = -1) {
   const n = w * h;
   const labels = new Int32Array(n).fill(-1);
   const stack = new Int32Array(n);
   const color = [];
   let count = 0;
   for (let start = 0; start < n; start++) {
-    if (labels[start] !== -1) continue;
+    if (labels[start] !== -1 || index[start] === barrier) continue;
     const c = index[start];
     let sp = 0;
     stack[sp++] = start; labels[start] = count;
@@ -64,16 +67,22 @@ export function components(index, w, h) {
  * Felzenszwalb & Huttenlocher's linear-time algorithm.
  */
 export function boundaryDistance(labels, w, h) {
-  const n = w * h, INF = 1e20;
-  const f = new Float64Array(n);
+  const feature = new Uint8Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const p = y * w + x, l = labels[p];
-      const edge = x === 0 || y === 0 || x === w - 1 || y === h - 1 ||
-        labels[p - 1] !== l || labels[p + 1] !== l || labels[p - w] !== l || labels[p + w] !== l;
-      f[p] = edge ? 0 : INF;
+      feature[p] = x === 0 || y === 0 || x === w - 1 || y === h - 1 ||
+        labels[p - 1] !== l || labels[p + 1] !== l || labels[p - w] !== l || labels[p + w] !== l ? 1 : 0;
     }
   }
+  return edt(feature, w, h);
+}
+
+/** Euclidean distance from every pixel to the nearest pixel where feature[p] is set. */
+export function edt(feature, w, h) {
+  const n = w * h, INF = 1e20;
+  const f = new Float64Array(n);
+  for (let p = 0; p < n; p++) f[p] = feature[p] ? 0 : INF;
   const maxLen = Math.max(w, h);
   const d = new Float64Array(maxLen), v = new Int32Array(maxLen), z = new Float64Array(maxLen + 1), col = new Float64Array(maxLen);
   const dt1 = (len) => {
@@ -120,7 +129,7 @@ export function mergeTiny(index, w, h, { minArea, minWidth, labDist, log = () =>
     const area = new Int32Array(count), thick = new Float32Array(count);
     for (let i = 0; i < n; i++) { area[labels[i]]++; if (dist[i] > thick[labels[i]]) thick[labels[i]] = dist[i]; }
     const small = [];
-    for (let r = 0; r < count; r++) if (area[r] < minArea || thick[r] < minRadius) small.push(r);
+    for (let r = 0; r < count; r++) if (color[r] !== LINE && (area[r] < minArea || thick[r] < minRadius)) small.push(r);
     log(`  pass ${pass + 1}: ${count} sections, ${small.length} too small`);
     if (!small.length) return index;
     small.sort((a, b) => area[a] - area[b]);
@@ -150,8 +159,9 @@ export function mergeTiny(index, w, h, { minArea, minWidth, labDist, log = () =>
       }
       let best = -1, bestScore = -Infinity;
       for (const [o, c] of nb) {
-        // Prefer the longest shared border; break near-ties by colour similarity.
-        const score = c - 0.01 * labDist(color[r], color[o]);
+        // Prefer the longest shared border; break near-ties by colour similarity. Merging into an
+        // outline is a last resort (it would make the speck disappear into the line).
+        const score = color[o] === LINE ? c * 0.2 : c - 0.01 * labDist(color[r], color[o]);
         if (score > bestScore) { bestScore = score; best = o; }
       }
       if (best < 0) continue;
@@ -237,6 +247,14 @@ export function traceOutlines(labels, w, h, { tolerance = 0.12 } = {}) {
     const pts = [sx, sy];
     let cur = nextEdge(sx, sy);
     if (!cur) return;
+    // Which section lies on each side of the chain. "right" is the side reached by turning the
+    // direction of travel 90 degrees clockwise on screen (y down); it stays the same along a chain.
+    const dx = cur[0] - sx, dy = cur[1] - sy;
+    let right, left;
+    if (dx === 1) { right = labels[sy * w + sx]; left = labels[(sy - 1) * w + sx]; }
+    else if (dx === -1) { right = labels[(sy - 1) * w + sx - 1]; left = labels[sy * w + sx - 1]; }
+    else if (dy === 1) { right = labels[sy * w + sx - 1]; left = labels[sy * w + sx]; }
+    else { right = labels[(sy - 1) * w + sx]; left = labels[(sy - 1) * w + sx - 1]; }
     let closed = false;
     while (cur) {
       pts.push(cur[0], cur[1]);
@@ -244,7 +262,7 @@ export function traceOutlines(labels, w, h, { tolerance = 0.12 } = {}) {
       if (closedOk && cur[0] === sx && cur[1] === sy) { closed = true; break; }
       cur = nextEdge(cur[0], cur[1]);
     }
-    chains.push({ pts, closed });
+    chains.push({ pts, closed, left, right });
   };
   for (let y = 0; y <= h; y++) for (let x = 0; x <= w; x++) {
     const d = deg[y * W1 + x];
@@ -253,7 +271,7 @@ export function traceOutlines(labels, w, h, { tolerance = 0.12 } = {}) {
   for (let y = 0; y <= h; y++) for (let x = 0; x <= w; x++) {
     if (deg[y * W1 + x] === 2) { while (true) { const before = chains.length; walk(x, y, true); if (chains.length === before) break; } }
   }
-  return chains.map((c) => smoothChain(c.pts, c.closed, tolerance));
+  return chains.map((c) => ({ pts: smoothChain(c.pts, c.closed, tolerance), left: c.left, right: c.right }));
 }
 
 function smoothChain(pts, closed, tolerance) {
@@ -280,8 +298,10 @@ function smoothChain(pts, closed, tolerance) {
     for (let i = 0; i < m - 1; i++) {
       const ax = px[i], ay = py[i], bx = px[i + 1], by = py[i + 1];
       const first = !closed && i === 0, last = !closed && i === m - 2;
-      if (!first) { nx.push(0.75 * ax + 0.25 * bx); ny.push(0.75 * ay + 0.25 * by); }
-      if (!last) { nx.push(0.25 * ax + 0.75 * bx); ny.push(0.25 * ay + 0.75 * by); }
+      // Cut corners by at most ~1px so long straight runs don't pull the line away from the edge.
+      const t = Math.min(0.25, 1.0 / Math.max(1e-6, Math.hypot(bx - ax, by - ay)));
+      if (!first) { nx.push(ax + t * (bx - ax)); ny.push(ay + t * (by - ay)); }
+      if (!last) { nx.push(bx - t * (bx - ax)); ny.push(by - t * (by - ay)); }
     }
     if (!closed) { nx.push(px[m - 1]); ny.push(py[m - 1]); } else { nx.push(nx[0]); ny.push(ny[0]); }
     px = nx; py = ny;
@@ -317,4 +337,121 @@ function douglasPeucker(xs, ys, tol) {
     if (worst >= 0) { keep[worst] = 1; stack.push([a, worst], [worst, b]); }
   }
   return keep;
+}
+
+/**
+ * Redraw the section map from the smoothed outlines, so the colour layer agrees exactly with
+ * the lines drawn on screen: every pixel takes the section on its side of the nearest line.
+ * `chains` are { pts (in quarter pixels, integers), left, right }. Sections that would end up with
+ * no pixels keep their original pixels. Returns a new Int32Array of labels.
+ */
+export function rasterizeOutlines(chains, w, h, labels, count) {
+  const rows = Array.from({ length: h }, () => []);
+  for (const { pts, left, right } of chains) {
+    for (let i = 0; i + 3 < pts.length; i += 2) {
+      const x1 = pts[i], y1 = pts[i + 1], x2 = pts[i + 2], y2 = pts[i + 3];
+      if (y1 === y2) continue;
+      const lo = Math.min(y1, y2), hi = Math.max(y1, y2);
+      // Pixel-centre rows (in quarter units: 4y + 2) with lo <= centre < hi.
+      let y = Math.max(0, Math.ceil((lo - 2) / 4));
+      for (; y < h && 4 * y + 2 < hi; y++) {
+        const yc = 4 * y + 2;
+        if (yc < lo) continue;
+        const x = x1 + ((yc - y1) * (x2 - x1)) / (y2 - y1);
+        // Going up the screen, the "right" side is the +x side.
+        rows[y].push(x, y2 < y1 ? right : left, y2 < y1 ? left : right);
+      }
+    }
+  }
+  const out = new Int32Array(w * h);
+  for (let y = 0; y < h; y++) {
+    const r = rows[y], n = r.length / 3;
+    const base = y * w;
+    if (!n) { for (let x = 0; x < w; x++) out[base + x] = labels[base + x]; continue; }
+    const order = Array.from({ length: n }, (_, k) => k).sort((a, b) => r[a * 3] - r[b * 3]);
+    // Walk the spans between consecutive crossings. Each span has two candidate sections: the
+    // one on the near side of the crossing before it and the one on the near side of the
+    // crossing after it. Normally they agree; where two smoothed lines run very close and swap
+    // order they don't, and the original pixels decide.
+    let x = 0;
+    for (let k = 0; k <= n; k++) {
+      // pixels x .. end-1 have centres (4x+2, in quarter pixels) strictly before crossing k
+      const end = k < n ? Math.min(w, Math.max(x, Math.ceil((r[order[k] * 3] - 2) / 4))) : w;
+      const a = k > 0 ? r[order[k - 1] * 3 + 1] : r[order[0] * 3 + 2];
+      const b = k < n ? r[order[k] * 3 + 2] : a;
+      let pick = a;
+      if (end > x) {
+        // Count the original labels in the span. Normally the bounding lines' side (a or b) is
+        // what's there; if something else clearly dominates, a crossing was inconsistent.
+        let ca = 0, cb = 0, cm = 0, m = -1;
+        for (let xx = x; xx < end; xx++) {
+          const l = labels[base + xx];
+          if (l === a) ca++; else if (l === b) cb++;
+          else if (l === m) cm++; else if (cm === 0) { m = l; cm = 1; } else cm--; // majority vote
+        }
+        if (cb > ca) pick = b;
+        if (m >= 0 && cm > 0) {
+          let cnt = 0;
+          for (let xx = x; xx < end; xx++) if (labels[base + xx] === m) cnt++;
+          if (cnt >= 3 && cnt > 2 * Math.max(ca, cb)) pick = m;
+        }
+      }
+      for (; x < end; x++) out[base + x] = pick;
+    }
+  }
+  const area = new Int32Array(count);
+  for (let i = 0; i < out.length; i++) area[out[i]]++;
+  let restored = 0;
+  for (let i = 0; i < labels.length; i++) if (area[labels[i]] === 0) { out[i] = labels[i]; restored++; }
+  return { labels: out, restored };
+}
+
+/**
+ * Line-art mode: find thin dark outlines. A pixel is an outline if its colour is dark and it is
+ * part of a stroke no wider than maxWidth; wider dark areas (a hat, an eye) stay colourable.
+ * Returns { mask, width } where width is the typical stroke width in pixels.
+ */
+export function findLines(index, w, h, isDark, maxWidth) {
+  const n = w * h;
+  const notDark = new Uint8Array(n);
+  for (let p = 0; p < n; p++) notDark[p] = isDark[index[p]] ? 0 : 1;
+  const inside = edt(notDark, w, h); // distance from a dark pixel to the nearest non-dark one
+  const half = maxWidth / 2;
+  const core = new Uint8Array(n);
+  let anyCore = false;
+  for (let p = 0; p < n; p++) if (!notDark[p] && inside[p] > half + 0.5) { core[p] = 1; anyCore = true; }
+  const fromCore = anyCore ? edt(core, w, h) : null;
+  const mask = new Uint8Array(n);
+  const widths = [];
+  for (let p = 0; p < n; p++) {
+    if (notDark[p]) continue;
+    if (fromCore && fromCore[p] <= half + 1) continue; // part of a thick dark area
+    mask[p] = 1;
+    // Ridge pixels (local maxima across the stroke) tell us the stroke's width.
+    const x = p % w;
+    if (x > 0 && x < w - 1 && p >= w && p < n - w) {
+      const d = inside[p];
+      if (d >= inside[p - 1] && d >= inside[p + 1] && d >= inside[p - w] && d >= inside[p + w]) widths.push(2 * d - 1);
+    }
+  }
+  widths.sort((a, b) => a - b);
+  const width = widths.length ? widths[Math.floor(widths.length * 0.7)] : 0; // 70th percentile: bold strokes win over tiny ones
+  return { mask, width };
+}
+
+/** Give every outline pixel (label -1) to the nearest section, splitting each line down its middle. */
+export function absorbLines(labels, w, h) {
+  const n = w * h;
+  const queue = new Int32Array(n);
+  let head = 0, tail = 0;
+  for (let p = 0; p < n; p++) if (labels[p] >= 0) queue[tail++] = p;
+  while (head < tail) {
+    const p = queue[head++], l = labels[p], x = p % w;
+    if (x > 0 && labels[p - 1] < 0) { labels[p - 1] = l; queue[tail++] = p - 1; }
+    if (x < w - 1 && labels[p + 1] < 0) { labels[p + 1] = l; queue[tail++] = p + 1; }
+    if (p >= w && labels[p - w] < 0) { labels[p - w] = l; queue[tail++] = p - w; }
+    if (p < n - w && labels[p + w] < 0) { labels[p + w] = l; queue[tail++] = p + w; }
+  }
+  for (let p = 0; p < n; p++) if (labels[p] < 0) labels[p] = 0;
+  return labels;
 }

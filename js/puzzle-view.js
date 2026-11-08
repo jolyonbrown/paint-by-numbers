@@ -5,9 +5,12 @@
 // View transform: css = map * scale + (tx, ty).
 
 const BG = '#ebe6df';
-const LINE = '#3d3835';
+const LINE = '#2e2927';
 const UNFILLED = [255, 255, 255];
-const LINE_RASTER_WIDTH = 1.5; // outline width in map px when drawn from the pre-rendered layer
+// Outline width in map px. The section map is drawn from the same outlines in the converter, so
+// every colour edge lies within 0.8 px of a line: 1.6 px lines always cover it (no white slivers).
+const LINE_WIDTH = 1.6;
+const OVERVIEW_MAX = 1400; // longest side of the low-res overview shown while gestures move
 const VECTOR_FROM = 1.7; // device px per map px above which outlines are drawn as crisp vectors
 const MIN_FONT = 10, MAX_FONT = 34; // css px
 const CELL = 128; // spatial grid for outline culling (map px)
@@ -25,6 +28,12 @@ function makeCanvas(w, h) {
 
 export class PuzzleView {
   /**
+   * Rendering strategy (for iPad Safari, whose 2D canvas is largely CPU-drawn): the main canvas
+   * is only redrawn when the view is still. While fingers or momentum move the view, the
+   * already-drawn canvas is moved with a CSS transform (GPU composited), with a low-res overview
+   * of the whole picture underneath so newly exposed edges are never blank. Fill animations
+   * redraw just the section's rectangle.
+   *
    * @param {HTMLCanvasElement} canvas
    * @param {object} pz decoded puzzle (codec.decodePuzzle)
    * @param {Uint8Array} filled 1 per filled section (shared with the game; the view only reads it)
@@ -49,6 +58,16 @@ export class PuzzleView {
     this.velocity = null;
     this.raf = 0;
     this.destroyed = false;
+    this.stage = canvas.parentElement;
+    this.rv = null; // view the main canvas was last fully drawn at
+    this.dirtyAll = true;
+    this.rects = []; // pending partial redraws, map-space [x0, y0, x1, y1]
+
+    this.ov = document.createElement('canvas');
+    this.ov.className = 'pv-overview';
+    this.ov.setAttribute('aria-hidden', 'true');
+    this.stage.insertBefore(this.ov, canvas);
+    canvas.classList.add('pv-main');
 
     this.buildLayers();
     this.buildLabels();
@@ -63,8 +82,10 @@ export class PuzzleView {
     cancelAnimationFrame(this.raf);
     this.ro.disconnect();
     this.unbind();
+    clearTimeout(this.pauseT); clearTimeout(this.settleT);
     // Free big canvases promptly (iOS has a tight canvas memory budget).
-    for (const c of [this.fillCanvas, this.hlCanvas, this.lineCanvas]) { c.width = c.height = 0; }
+    for (const c of [this.fillCanvas, this.hlCanvas, this.lineCanvas, this.ov]) { c.width = c.height = 0; }
+    this.ov.remove();
   }
 
   // ---------- layers ----------
@@ -114,9 +135,19 @@ export class PuzzleView {
     this.cells = cells.filter((c) => c.n > 0);
     this.lineCanvas = makeCanvas(W, H);
     const lc = this.lineCanvas.getContext('2d');
-    lc.lineWidth = LINE_RASTER_WIDTH; lc.lineJoin = 'round'; lc.lineCap = 'round'; lc.strokeStyle = LINE;
+    const LW = this.lineWidth = Math.max(LINE_WIDTH, this.pz.lineWidth || 0);
+    lc.lineWidth = LW; lc.lineJoin = 'round'; lc.lineCap = 'round'; lc.strokeStyle = LINE;
     lc.stroke(all);
-    lc.strokeRect(0.75, 0.75, W - 1.5, H - 1.5);
+    lc.strokeRect(LW / 2, LW / 2, W - LW, H - LW);
+
+    // Low-res overview of the whole picture, shown under the main canvas while the view moves.
+    this.ovScale = Math.min(1, OVERVIEW_MAX / Math.max(W, H));
+    this.ov.width = Math.round(W * this.ovScale);
+    this.ov.height = Math.round(H * this.ovScale);
+    this.ov.style.width = this.ov.width + 'px';
+    this.ov.style.height = this.ov.height + 'px';
+    this.ovCtx = this.ov.getContext('2d');
+    this.buildOverview();
 
   }
 
@@ -126,11 +157,28 @@ export class PuzzleView {
     this.labelText = new Array(n);
     for (let i = 0; i < n; i++) {
       const num = String(this.pz.sectionColor[L.section[i]] + 1);
-      const r = Math.max(0, L.r[i] - 0.8); // leave room for the outline
+      const r = Math.max(0, L.r[i] - Math.max(LINE_WIDTH, this.pz.lineWidth || 0) / 2); // leave room for the outline
       this.labelFont[i] = r * (num.length === 1 ? 1.55 : num.length === 2 ? 1.08 : 0.8);
       this.labelText[i] = num;
     }
   }
+
+  /** Redraw the overview (whole picture, or just a map-space rectangle). */
+  buildOverview(rect) {
+    const o = this.ovCtx, k = this.ovScale;
+    if (!o) return;
+    o.save();
+    o.setTransform(k, 0, 0, k, 0, 0);
+    if (rect) { o.beginPath(); o.rect(rect[0] - 2, rect[1] - 2, rect[2] - rect[0] + 4, rect[3] - rect[1] + 4); o.clip(); }
+    o.imageSmoothingEnabled = true;
+    o.imageSmoothingQuality = 'high';
+    o.drawImage(this.fillCanvas, 0, 0);
+    if (this.showShading && this.selected >= 0 && this.linesAlpha > 0) o.drawImage(this.hlCanvas, 0, 0);
+    if (this.linesAlpha > 0) { o.globalAlpha = this.linesAlpha; o.drawImage(this.lineCanvas, 0, 0); }
+    o.restore();
+  }
+
+  setShading(on) { this.showShading = on; this.buildOverview(); this.requestDraw(); }
 
   /**
    * Shade the unfilled sections of colour c (or none for -1) with a checker pattern drawn in
@@ -153,7 +201,7 @@ export class PuzzleView {
     const hc = this.hlCtx;
     hc.clearRect(0, 0, W, H);
     this.hlPeriod = this.shadingPeriod();
-    if (c < 0) { this.requestDraw(); return; }
+    if (c < 0) { this.buildOverview(); this.requestDraw(); return; }
     const want = new Uint8Array(this.pz.S);
     let x0 = Infinity, y0 = Infinity, x1 = -1, y1 = -1;
     for (const s of colorSections[c]) {
@@ -176,6 +224,7 @@ export class PuzzleView {
       }
       hc.putImageData(img, x0, y0);
     }
+    this.buildOverview();
     this.requestDraw();
   }
 
@@ -213,18 +262,26 @@ export class PuzzleView {
     this.hlCtx.globalCompositeOperation = 'destination-out';
     this.hlCtx.drawImage(sc.c, sc.x0, sc.y0);
     this.hlCtx.globalCompositeOperation = 'source-over';
-    if (!animate) { this.fillCtx.drawImage(sc.c, sc.x0, sc.y0); sc.c.width = 0; this.requestDraw(); return; }
+    const rect = [sc.x0, sc.y0, sc.x0 + sc.w, sc.y0 + sc.h];
+    if (!animate) { this.fillCtx.drawImage(sc.c, sc.x0, sc.y0); sc.c.width = 0; this.buildOverview(rect); this.invalidate(rect); return; }
     if (mx == null) { mx = this.pz.labels.x[this.pz.pole[s]]; my = this.pz.labels.y[this.pz.pole[s]]; }
     const maxR = Math.max(Math.hypot(mx - sc.x0, my - sc.y0), Math.hypot(mx - sc.x0 - sc.w, my - sc.y0), Math.hypot(mx - sc.x0, my - sc.y0 - sc.h), Math.hypot(mx - sc.x0 - sc.w, my - sc.y0 - sc.h));
-    // Duration grows gently with how big the section looks on screen.
-    const dur = Math.min(520, 220 + Math.sqrt(sc.w * sc.h) * this.scale * 0.6);
-    this.fills.push({ ...sc, s, mx, my, maxR, t0: now(), dur });
-    this.requestDraw();
+    // Quick, growing gently with how big the section looks on screen.
+    const dur = Math.min(300, 150 + Math.sqrt(sc.w * sc.h) * this.scale * 0.25);
+    this.fills.push({ ...sc, s, mx, my, maxR, rect, t0: now(), dur });
+    this.invalidate(rect);
   }
 
-  wiggle(s) { this.wiggles.set(s, now()); this.requestDraw(); }
+  sectionRect(s) { const b = this.pz.bbox; return [b[s * 4], b[s * 4 + 1], b[s * 4 + 2] + 1, b[s * 4 + 3] + 1]; }
 
-  pulseAt(mx, my, r, color = '#ffffff') { this.pulses.push({ mx, my, r, color, t0: now() }); this.requestDraw(); }
+  wiggle(s) { this.wiggles.set(s, now()); this.invalidate(this.sectionRect(s)); }
+
+  pulseAt(mx, my, r, color = '#ffffff') { this.pulses.push({ mx, my, r, color, t0: now() }); this.invalidate(this.pulseRect({ mx, my, r })); }
+
+  pulseRect(p) {
+    const R = p.r * 2.4 + (12 + 6) / this.scale;
+    return [p.mx - R, p.my - R, p.mx + R, p.my + R];
+  }
 
   // ---------- view transform ----------
   resize() {
@@ -252,7 +309,8 @@ export class PuzzleView {
       this.setCenter(Math.max(this.minScale, Math.min(this.maxScale, s)), center[0], center[1]);
     }
     this.settle();
-    this.draw();
+    this.requestDraw();
+    this.frame();
   }
 
   toMap(x, y) { return [(x - this.tx) / this.scale, (y - this.ty) / this.scale]; }
@@ -262,7 +320,7 @@ export class PuzzleView {
     this.tx = this.cssW / 2 - mx * scale;
     this.ty = this.cssH / 2 - my * scale;
     this.clamp();
-    this.requestDraw();
+    this.schedule();
   }
 
   getView() {
@@ -300,14 +358,16 @@ export class PuzzleView {
     const travel = Math.hypot(mx - cx0, my - cy0) * Math.min(s0, scale) / Math.max(this.cssW, this.cssH);
     const dip = Math.max(0, Math.min(0.6, (travel - 0.6) * 0.35));
     this.flight = { t0: now(), dur, s0, s1: scale, cx0, cy0, mx, my, dip, done };
-    this.requestDraw();
+    this.schedule();
   }
 
   stopMotion() { this.velocity = null; this.flight = null; }
 
   // ---------- gestures ----------
   bindGestures() {
-    const c = this.canvas;
+    // Listen on the stage, not the canvas: while the view moves the canvas is transformed and may
+    // not be under the finger. Buttons on the stage keep their own taps.
+    const c = this.stage;
     const down = (e) => this.onDown(e), move = (e) => this.onMove(e), up = (e) => this.onUp(e);
     const wheel = (e) => this.onWheel(e);
     c.addEventListener('pointerdown', down);
@@ -323,14 +383,14 @@ export class PuzzleView {
   }
 
   localPoint(e) {
-    const r = this.canvas.getBoundingClientRect();
+    const r = this.stage.getBoundingClientRect();
     return [e.clientX - r.left, e.clientY - r.top];
   }
 
   onDown(e) {
-    if (this.locked) return;
+    if (this.locked || e.target.closest?.('button, .done-card, .dialog')) return;
     e.preventDefault();
-    try { this.canvas.setPointerCapture(e.pointerId); } catch {}
+    try { this.stage.setPointerCapture(e.pointerId); } catch {}
     this.stopMotion();
     const [x, y] = this.localPoint(e);
     this.pointers.set(e.pointerId, { x, y });
@@ -365,9 +425,16 @@ export class PuzzleView {
       this.tx = mid[0] - this.pinch.map[0] * this.scale;
       this.ty = mid[1] - this.pinch.map[1] * this.scale;
       this.clamp();
+      this.gesturing = true;
       this.viewChanged();
     } else if (this.pointers.size === 1) {
-      if (this.tap && Math.hypot(x - this.tap.x, y - this.tap.y) > TAP_SLOP) this.tap = null;
+      if (this.tap) {
+        if (Math.hypot(x - this.tap.x, y - this.tap.y) <= TAP_SLOP) return; // still a tap: keep still
+        // It's a pan after all: catch up with the finger from where it started.
+        this.tx += x - this.tap.x - dx; this.ty += y - this.tap.y - dy;
+        this.tap = null;
+      }
+      this.gesturing = true;
       this.tx += dx; this.ty += dy;
       this.clamp();
       this.samples.push({ x, y, t: now() });
@@ -389,6 +456,7 @@ export class PuzzleView {
       return;
     }
     if (this.pointers.size > 0) return;
+    this.gesturing = false;
     if (e.type !== 'pointercancel' && this.tap && this.tap.id === e.pointerId && now() - this.tap.t < 600 && !this.pinch) {
       const [mx, my] = this.toMap(this.tap.x, this.tap.y);
       this.tap = null;
@@ -406,8 +474,9 @@ export class PuzzleView {
       const a = recent[0], b = recent[recent.length - 1];
       const dt = Math.max(8, b.t - a.t);
       const vx = (b.x - a.x) / dt, vy = (b.y - a.y) / dt;
-      if (Math.hypot(vx, vy) > 0.15) { this.velocity = { vx, vy, t }; this.requestDraw(); }
+      if (Math.hypot(vx, vy) > 0.15) this.velocity = { vx, vy, t };
     }
+    this.schedule();
     this.cb.onViewChange?.();
   }
 
@@ -421,16 +490,33 @@ export class PuzzleView {
     this.scale = Math.max(this.minScale, Math.min(this.maxScale, this.scale * k));
     this.tx = x - m[0] * this.scale; this.ty = y - m[1] * this.scale;
     this.clamp();
+    this.wheelUntil = now() + 140;
     this.viewChanged();
     clearTimeout(this.wheelT);
     this.wheelT = setTimeout(() => this.cb.onViewChange?.(), 300);
   }
 
-  viewChanged() { this.requestDraw(); }
+  viewChanged() {
+    this.lastMoveT = now();
+    this.schedule();
+    // If the fingers pause, redraw sharply even though they're still down.
+    clearTimeout(this.pauseT);
+    this.pauseT = setTimeout(() => this.schedule(), 130);
+  }
 
   // ---------- animation loop ----------
-  requestDraw() {
+  /** Content changed everywhere: redraw the whole main canvas on the next still frame. */
+  requestDraw() { this.dirtyAll = true; this.schedule(); }
+
+  /** Content changed inside a map-space rectangle. */
+  invalidate(rect) { this.rects.push(rect); this.schedule(); }
+
+  schedule() {
     if (!this.raf && !this.destroyed) this.raf = requestAnimationFrame(() => this.frame());
+  }
+
+  isMoving(t) {
+    return !!(this.velocity || this.flight || (this.gesturing && t - (this.lastMoveT || 0) < 120) || t < (this.wheelUntil || 0));
   }
 
   frame() {
@@ -459,33 +545,88 @@ export class PuzzleView {
     for (let i = this.tweens.length - 1; i >= 0; i--) {
       const tw = this.tweens[i], k = Math.min(1, (t - tw.t0) / tw.dur);
       tw.set(tw.from + (tw.to - tw.from) * easeInOut(k));
+      this.dirtyAll = true;
       if (k >= 1) { this.tweens.splice(i, 1); tw.done?.(); } else active = true;
     }
     for (let i = this.fills.length - 1; i >= 0; i--) {
       const f = this.fills[i];
+      this.rects.push(f.rect);
       if (t - f.t0 >= f.dur) {
         this.fillCtx.drawImage(f.c, f.x0, f.y0);
         f.c.width = 0;
         this.fills.splice(i, 1);
+        this.buildOverview(f.rect);
       } else active = true;
     }
-    for (const [s, t0] of this.wiggles) { if (t - t0 > 450) this.wiggles.delete(s); else active = true; }
+    for (const [s, t0] of this.wiggles) {
+      this.rects.push(this.sectionRect(s));
+      if (t - t0 > 450) this.wiggles.delete(s); else active = true;
+    }
+    for (const p of this.pulses) this.rects.push(this.pulseRect(p));
     this.pulses = this.pulses.filter((p) => t - p.t0 < 1800);
     if (this.pulses.length) active = true;
-    if (this.replayState) { this.replayStep(t); active = true; }
-    this.draw(t);
-    if (active) this.requestDraw();
+    if (this.replayState) { this.replayStep(t); this.dirtyAll = true; active = true; }
+
+    const moving = this.isMoving(t);
+    this.placeOverview();
+    if (moving) {
+      this.placeMain();
+      active = true;
+    } else {
+      const rv = this.rv;
+      if (this.dirtyAll || !rv || rv.scale !== this.scale || rv.tx !== this.tx || rv.ty !== this.ty) {
+        this.draw(t);
+      } else if (this.rects.length) {
+        this.draw(t, this.rects);
+      }
+      this.dirtyAll = false;
+      this.rects = [];
+    }
+    if (active) this.schedule();
+  }
+
+  /** While moving: shift/scale the last full drawing with a GPU transform instead of redrawing. */
+  placeMain() {
+    const rv = this.rv;
+    if (!rv) return;
+    const k = this.scale / rv.scale;
+    this.canvas.style.transform = `translate(${this.tx - rv.tx * k}px, ${this.ty - rv.ty * k}px) scale(${k})`;
+  }
+
+  placeOverview() {
+    const k = this.scale / this.ovScale;
+    this.ov.style.transform = `translate(${this.tx}px, ${this.ty}px) scale(${k})`;
   }
 
   tween(from, to, dur, set, done) { this.tweens.push({ from, to, dur, set, done, t0: now() }); this.requestDraw(); }
 
   // ---------- drawing ----------
-  draw(t = now()) {
+  /**
+   * Draw the current view into the main canvas: everything, or only inside the given map-space
+   * rectangles (for animations while the view is still).
+   */
+  draw(t = now(), rects = null) {
     if (!this.sized || this.destroyed) return;
     const ctx = this.ctx, d = this.dpr, W = this.pz.W, H = this.pz.H;
     const s = this.scale * d, tx = this.tx * d, ty = this.ty * d;
     const cw = this.canvas.width, ch = this.canvas.height;
+    let clip = null;
+    if (rects) {
+      // Union of the rectangles in device px, clipped to the canvas.
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (const r of rects) { x0 = Math.min(x0, r[0]); y0 = Math.min(y0, r[1]); x1 = Math.max(x1, r[2]); y1 = Math.max(y1, r[3]); }
+      clip = [Math.max(0, Math.floor(x0 * s + tx) - 4), Math.max(0, Math.floor(y0 * s + ty) - 4), Math.min(cw, Math.ceil(x1 * s + tx) + 4), Math.min(ch, Math.ceil(y1 * s + ty) + 4)];
+      if (clip[2] <= clip[0] || clip[3] <= clip[1]) return;
+      if ((clip[2] - clip[0]) * (clip[3] - clip[1]) > cw * ch * 0.6) clip = null; // nearly everything: just redraw
+    }
+    if (!clip) {
+      this.rv = { scale: this.scale, tx: this.tx, ty: this.ty };
+      this.canvas.style.transform = '';
+    }
+    ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (clip) { ctx.beginPath(); ctx.rect(clip[0], clip[1], clip[2] - clip[0], clip[3] - clip[1]); ctx.clip(); }
+    this.clipRect = clip;
     ctx.fillStyle = BG;
     ctx.fillRect(0, 0, cw, ch);
     // Soft shadow under the picture.
@@ -495,7 +636,8 @@ export class PuzzleView {
     ctx.fillRect(tx - 2 * d, ty + 4 * d, W * s + 4 * d, H * s + 6 * d);
 
     ctx.setTransform(s, 0, 0, s, tx, ty);
-    ctx.imageSmoothingEnabled = true;
+    // Zoomed in, show colour pixels crisply (no blur): the outlines cover every edge exactly.
+    ctx.imageSmoothingEnabled = s <= VECTOR_FROM;
     ctx.imageSmoothingQuality = s < 1 ? 'high' : 'low';
     ctx.drawImage(this.fillCanvas, 0, 0);
 
@@ -520,7 +662,7 @@ export class PuzzleView {
         ctx.drawImage(this.lineCanvas, 0, 0);
       } else {
         const x0 = -tx / s, y0 = -ty / s, x1 = (cw - tx) / s, y1 = (ch - ty) / s;
-        const lw = Math.max(1.0, LINE_RASTER_WIDTH * Math.pow(VECTOR_FROM / s, 0.3));
+        const lw = this.lineWidth;
         ctx.lineWidth = lw; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = LINE;
         const pad = lw;
         for (const c of this.cells) {
@@ -549,6 +691,7 @@ export class PuzzleView {
         ctx.lineWidth = 2 * d; ctx.strokeStyle = `rgba(40,35,30,${(1 - kk) * 0.8})`; ctx.stroke();
       }
     }
+    ctx.restore();
   }
 
   drawLabels(t) {
@@ -565,7 +708,8 @@ export class PuzzleView {
       const fcss = this.labelFont[i] * sc;
       if (fcss < MIN_FONT) continue;
       const x = L.x[i] * s + tx, y = L.y[i] * s + ty;
-      if (x < -60 || y < -60 || x > cw + 60 || y > ch + 60) continue;
+      const c = this.clipRect;
+      if (c ? (x < c[0] - 80 || y < c[1] - 80 || x > c[2] + 80 || y > c[3] + 80) : (x < -60 || y < -60 || x > cw + 60 || y > ch + 60)) continue;
       const fpx = Math.round(Math.min(fcss, MAX_FONT) * d);
       const isSel = colorOf[sec] === sel;
       const font = `${isSel ? 600 : 400} ${fpx}px -apple-system, system-ui, "Segoe UI", Roboto, sans-serif`;
@@ -581,8 +725,8 @@ export class PuzzleView {
 
   // ---------- finishing ----------
   setLinesAlpha(a, dur = 0) {
-    if (!dur) { this.linesAlpha = a; this.requestDraw(); return; }
-    this.tween(this.linesAlpha, a, dur, (v) => { this.linesAlpha = v; });
+    if (!dur) { this.linesAlpha = a; this.buildOverview(); this.requestDraw(); return; }
+    this.tween(this.linesAlpha, a, dur, (v) => { this.linesAlpha = v; }, () => this.buildOverview());
   }
 
   /** Replay the colouring in the given section order over `dur` ms. */
@@ -626,6 +770,7 @@ export class PuzzleView {
     void W;
     if (k >= 1) {
       this.replayState = null;
+      this.buildOverview();
       r.onDone?.();
     }
   }

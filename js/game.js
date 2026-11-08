@@ -87,11 +87,10 @@ export class Game {
     $('.fit').addEventListener('click', () => this.view.fit(true));
     $('.shade').addEventListener('click', () => {
       const on = !this.view.showShading;
-      this.view.showShading = on;
+      this.view.setShading(on);
       $('.shade').classList.toggle('on', on);
       opts.settings.shading = on;
       opts.saveSettings();
-      this.view.requestDraw();
     });
     $('.back').addEventListener('click', () => this.exit());
     $('.replay').addEventListener('click', () => this.playReplay());
@@ -250,7 +249,6 @@ export class Game {
   showFinished() {
     this.root.classList.add('is-finished');
     this.view.setSelected(-1);
-    this.view.setLinesAlpha(0);
     this.$('.done-card').hidden = false;
   }
 
@@ -261,11 +259,10 @@ export class Game {
     v.locked = true;
     if (!first) card.classList.add('dim');
     v.fit(!first);
-    v.setLinesAlpha(1, 250);
     const dur = this.opts.fast ? 200 : Math.min(7000, Math.max(3500, this.pz.S * 5));
     setTimeout(() => {
       v.replay(this.order, dur, () => {
-        v.setLinesAlpha(0, this.opts.fast ? 50 : 1100);
+        // The outlines stay: like line art, they keep every shape readable in the finished picture.
         this.replaying = false;
         v.locked = false;
         card.classList.remove('dim');

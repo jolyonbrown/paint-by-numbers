@@ -1,12 +1,47 @@
 {
   "pictures": [
     {
+      "id": "market",
+      "title": "Christmas Market",
+      "category": "Christmas",
+      "source": "market.svg",
+      "options": {
+        "colors": 30,
+        "lineArt": true,
+        "size": 2400,
+        "mergeDelta": 6,
+        "lineMax": 16
+      }
+    },
+    {
+      "id": "window",
+      "title": "Stained Glass Window",
+      "category": "Christmas",
+      "source": "window.svg",
+      "options": {
+        "colors": 30,
+        "lineArt": true,
+        "lineMax": 16
+      }
+    },
+    {
+      "id": "house",
+      "title": "Christmas House",
+      "category": "Christmas",
+      "source": "house.svg",
+      "options": {
+        "colors": 30,
+        "lineArt": true
+      }
+    },
+    {
       "id": "robin",
       "title": "Robin",
       "category": "Christmas",
       "source": "robin.svg",
       "options": {
-        "colors": 30
+        "colors": 30,
+        "lineArt": true
       }
     },
     {
@@ -15,7 +50,8 @@
       "category": "Christmas",
       "source": "tree.svg",
       "options": {
-        "colors": 30
+        "colors": 30,
+        "lineArt": true
       }
     },
     {
@@ -24,7 +60,8 @@
       "category": "Christmas",
       "source": "fireside.svg",
       "options": {
-        "colors": 30
+        "colors": 30,
+        "lineArt": true
       }
     },
     {
@@ -33,7 +70,8 @@
       "category": "Winter",
       "source": "cottage.svg",
       "options": {
-        "colors": 30
+        "colors": 30,
+        "lineArt": true
       }
     },
     {
@@ -42,7 +80,8 @@
       "category": "Winter",
       "source": "fox.svg",
       "options": {
-        "colors": 30
+        "colors": 30,
+        "lineArt": true
       }
     },
     {
@@ -51,7 +90,8 @@
       "category": "Autumn",
       "source": "woodland.svg",
       "options": {
-        "colors": 28
+        "colors": 28,
+        "lineArt": true
       }
     }
   ]

@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 1000" width="750" height="1000">
-<rect width="750" height="1000" fill="#ffffff"/>
+<style>path:not([fill="none"]):not(.ns),rect:not(.ns),circle:not(.ns),ellipse:not(.ns),polygon:not(.ns){stroke:#2b2421;stroke-width:1.7;stroke-linejoin:round}</style>
+<rect width="750" height="1000" fill="#ffffff" class="ns"/>
 <g><rect x="0" y="0" width="750" height="1000" fill="#2f5b4f" />
 <polygon points="30,8 39,20 30,32 21,20" fill="#3d6e60" />
 <polygon points="90,8 99,20 90,32 81,20" fill="#3d6e60" />
@@ -340,19 +341,19 @@
 <path d="M350.5,600C341.8,595 349.6,578.8 353.3,570C356.9,561.3 368.4,555 372.5,547.5C376.6,540 375.7,524.4 378,525C380.3,525.6 382.1,543.1 386.3,551.3C390.4,559.4 399.5,565.6 402.8,573.8C406,581.9 414.2,595.6 405.5,600C396.8,604.4 359.2,605 350.5,600Z" fill="#fde58e" />
 <rect x="160" y="640" width="430" height="40" fill="#4a4040" />
 <rect x="100" y="300" width="550" height="36" fill="#6b4630" />
-<rect x="100" y="300" width="550" height="10" fill="#8a5d3f" />
+<rect class="ns" x="100" y="300" width="550" height="10" fill="#8a5d3f" />
 <rect x="158" y="220" width="24" height="80" fill="#f2e8d4" />
 <ellipse cx="170" cy="202" rx="8" ry="16" fill="#ffd56b" />
-<ellipse cx="170" cy="208" rx="4" ry="8" fill="#f07a24" />
+<ellipse class="ns" cx="170" cy="208" rx="4" ry="8" fill="#f07a24" />
 <rect x="218" y="220" width="24" height="80" fill="#f2e8d4" />
 <ellipse cx="230" cy="202" rx="8" ry="16" fill="#ffd56b" />
-<ellipse cx="230" cy="208" rx="4" ry="8" fill="#f07a24" />
+<ellipse class="ns" cx="230" cy="208" rx="4" ry="8" fill="#f07a24" />
 <rect x="508" y="220" width="24" height="80" fill="#f2e8d4" />
 <ellipse cx="520" cy="202" rx="8" ry="16" fill="#ffd56b" />
-<ellipse cx="520" cy="208" rx="4" ry="8" fill="#f07a24" />
+<ellipse class="ns" cx="520" cy="208" rx="4" ry="8" fill="#f07a24" />
 <rect x="568" y="220" width="24" height="80" fill="#f2e8d4" />
 <ellipse cx="580" cy="202" rx="8" ry="16" fill="#ffd56b" />
-<ellipse cx="580" cy="208" rx="4" ry="8" fill="#f07a24" />
+<ellipse class="ns" cx="580" cy="208" rx="4" ry="8" fill="#f07a24" />
 <polygon points="375,216 384,237.6 407.3,239.5 389.6,254.7 395,277.5 375,265.3 355,277.5 360.4,254.7 342.7,239.5 366,237.6" fill="#e5b445" />
 <ellipse cx="110" cy="345" rx="26" ry="14" fill="#2f7a4c" transform="rotate(-20 110 345)"/>
 <ellipse cx="148" cy="352.7" rx="26" ry="14" fill="#2c6a45" transform="rotate(20 148 352.7306122468523)"/>
@@ -377,10 +378,10 @@
 <rect x="244" y="350" width="72" height="30" fill="#f7f1e6" />
 <polygon points="220,495 222.6,501.4 229.5,501.9 224.3,506.4 225.9,513.1 220,509.5 214.1,513.1 215.7,506.4 210.5,501.9 217.4,501.4" fill="#e5b445" />
 <path d="M450,360 h60 v120 q0,40 -40,50 l-60,12 q-30,4 -32,-26 q0,-22 30,-30 l42,-10 z" fill="#2f7a4c" />
-<rect x="450" y="390" width="60" height="10" fill="#f7f1e6" />
-<rect x="450" y="416" width="60" height="10" fill="#f7f1e6" />
-<rect x="450" y="442" width="60" height="10" fill="#f7f1e6" />
-<rect x="450" y="468" width="60" height="10" fill="#f7f1e6" />
+<rect class="ns" x="450" y="390" width="60" height="10" fill="#f7f1e6" />
+<rect class="ns" x="450" y="416" width="60" height="10" fill="#f7f1e6" />
+<rect class="ns" x="450" y="442" width="60" height="10" fill="#f7f1e6" />
+<rect class="ns" x="450" y="468" width="60" height="10" fill="#f7f1e6" />
 <rect x="444" y="350" width="72" height="30" fill="#f7f1e6" />
 <polygon points="420,495 422.6,501.4 429.5,501.9 424.3,506.4 425.9,513.1 420,509.5 414.1,513.1 415.7,506.4 410.5,501.9 417.4,501.4" fill="#e5b445" />
 <path d="M-40,690 L0,704 L40,690 L80,704 L120,690 L160,704 L200,690 L240,704 L280,690 L320,704 L360,690 L400,704 L440,690 L480,704 L520,690 L560,704 L600,690 L640,704 L680,690 L720,704 L760,690 L790,1020 L-40,1020 Z" fill="#f1e6d2" />
@@ -399,23 +400,23 @@
 <ellipse cx="600" cy="872" rx="118" ry="42" fill="#e8eef2" />
 <circle cx="560" cy="836" r="17" fill="#b86b35" />
 <path d="M544,848C534.3,849.3 522,852.7 518,856C514,859.3 515.3,866.7 520,868C524.7,869.3 542.7,858.7 546,864C549.3,869.3 538.7,893.3 540,900C541.3,906.7 550.7,906.7 554,904C557.3,901.3 558,884 560,884C562,884 562.7,901.3 566,904C569.3,906.7 578.7,906.7 580,900C581.3,893.3 570.7,869.3 574,864C577.3,858.7 595.3,869.3 600,868C604.7,866.7 606,859.3 602,856C598,852.7 585.7,849.3 576,848C566.3,846.7 553.7,846.7 544,848Z" fill="#b86b35" />
-<circle cx="554" cy="833" r="3" fill="#fbf5ea" />
-<circle cx="566" cy="833" r="3" fill="#fbf5ea" />
-<circle cx="560" cy="862" r="3.5" fill="#c4313a" />
-<circle cx="560" cy="874" r="3.5" fill="#2f7a4c" />
+<circle class="ns" cx="554" cy="833" r="3" fill="#fbf5ea" />
+<circle class="ns" cx="566" cy="833" r="3" fill="#fbf5ea" />
+<circle class="ns" cx="560" cy="862" r="3.5" fill="#c4313a" />
+<circle class="ns" cx="560" cy="874" r="3.5" fill="#2f7a4c" />
 <circle cx="650" cy="829.4" r="15.3" fill="#b86b35" />
 <path d="M635.6,840.2C626.9,841.4 615.8,844.4 612.2,847.4C608.6,850.4 609.8,857 614,858.2C618.2,859.4 634.4,849.8 637.4,854.6C640.4,859.4 630.8,881 632,887C633.2,893 641.6,893 644.6,890.6C647.6,888.2 648.2,872.6 650,872.6C651.8,872.6 652.4,888.2 655.4,890.6C658.4,893 666.8,893 668,887C669.2,881 659.6,859.4 662.6,854.6C665.6,849.8 681.8,859.4 686,858.2C690.2,857 691.4,850.4 687.8,847.4C684.2,844.4 673.1,841.4 664.4,840.2C655.7,839 644.3,839 635.6,840.2Z" fill="#b86b35" />
-<circle cx="644.6" cy="826.7" r="2.7" fill="#fbf5ea" />
-<circle cx="655.4" cy="826.7" r="2.7" fill="#fbf5ea" />
-<circle cx="650" cy="852.8" r="3.1" fill="#c4313a" />
-<circle cx="650" cy="863.6" r="3.1" fill="#2f7a4c" />
+<circle class="ns" cx="644.6" cy="826.7" r="2.7" fill="#fbf5ea" />
+<circle class="ns" cx="655.4" cy="826.7" r="2.7" fill="#fbf5ea" />
+<circle class="ns" cx="650" cy="852.8" r="3.1" fill="#c4313a" />
+<circle class="ns" cx="650" cy="863.6" r="3.1" fill="#2f7a4c" />
 <path d="M470,960 L520,850 Q535,820 560,835 Q580,850 568,872" fill="none" stroke="#f7f1e6" stroke-width="16" stroke-linecap="round"/>
-<circle cx="478" cy="942" r="6" fill="#d9363e" />
-<circle cx="486.5" cy="923.5" r="6" fill="#d9363e" />
-<circle cx="495" cy="905" r="6" fill="#d9363e" />
-<circle cx="503.5" cy="886.5" r="6" fill="#d9363e" />
-<circle cx="512" cy="868" r="6" fill="#d9363e" />
-<circle cx="520.5" cy="849.5" r="6" fill="#d9363e" />
+<circle class="ns" cx="478" cy="942" r="6" fill="#d9363e" />
+<circle class="ns" cx="486.5" cy="923.5" r="6" fill="#d9363e" />
+<circle class="ns" cx="495" cy="905" r="6" fill="#d9363e" />
+<circle class="ns" cx="503.5" cy="886.5" r="6" fill="#d9363e" />
+<circle class="ns" cx="512" cy="868" r="6" fill="#d9363e" />
+<circle class="ns" cx="520.5" cy="849.5" r="6" fill="#d9363e" />
 <ellipse cx="280" cy="960" rx="135" ry="22" fill="#a92e33" />
 <path d="M395,810 q70,0 70,65 q0,65 -70,65 v-30 q40,0 40,-35 q0,-35 -40,-35 z" fill="#a92e33" />
 <path d="M160,760 V940 Q280,990 400,940 V760 Z" fill="#d23d3d" />

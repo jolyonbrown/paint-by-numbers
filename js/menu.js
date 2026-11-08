@@ -43,7 +43,7 @@ export function paintThumb(canvas, t, filledOrderB64, done) {
     d[q + 3] = 255;
   }
   ctx.putImageData(img, 0, 0);
-  if (!done) ctx.drawImage(t.lines, 0, 0);
+  ctx.drawImage(t.lines, 0, 0); // outlines stay on finished pictures too, like line art
 }
 
 export class Menu {

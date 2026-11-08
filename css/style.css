@@ -87,8 +87,9 @@ img, canvas { -webkit-user-drag: none; -webkit-touch-callout: none; }
   display: flex; flex-direction: column;
   background: var(--paper-2);
 }
-.stage { flex: 1; position: relative; overflow: hidden; min-height: 0; }
-.stage canvas { position: absolute; left: 0; top: 0; touch-action: none; display: block; }
+.stage { flex: 1; position: relative; overflow: hidden; min-height: 0; touch-action: none; background: var(--paper-2); }
+.stage canvas { position: absolute; left: 0; top: 0; touch-action: none; display: block; transform-origin: 0 0; will-change: transform; }
+.stage .pv-overview { pointer-events: none; box-shadow: 0 3px 8px rgba(60, 40, 20, .12); }
 
 .hud { position: absolute; inset: 0; pointer-events: none; }
 .hud > *, .hud .tools > * { pointer-events: auto; }
